@@ -1,5 +1,6 @@
 #' Summary of measurement nonequivalence effects
 #'
+#'
 #' \code{dmacs_summary} returns a summary of measurement non-equivalence
 #' effects given lists of parameters.
 #'
