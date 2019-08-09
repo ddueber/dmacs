@@ -31,7 +31,7 @@
 #' the first group if no value is provided. It is strongly recommended to
 #' provide the reference group as a string, since group names in data are
 #' often ordered by their appearance in the data, not alphabetically.
-#' \@param categorical is a Boolean variable declaring whether the variables
+#' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
 #' provided, categorical defaults to \code{FALSE}, although if multiple
@@ -151,7 +151,7 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' the denominator of the dmacs effect size. This will usually either be
 #' pooled standard deviations or the standard deviation of the reference
 #' group.
-#' \@param categorical is a Boolean variable declaring whether the variables
+#' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
 #' provided, categorical defaults to \code{FALSE}, although if multiple

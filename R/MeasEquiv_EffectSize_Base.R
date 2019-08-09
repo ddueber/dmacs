@@ -8,6 +8,7 @@
 #'
 #' @return A vector of standard deviations by column
 #' @keywords internal
+#' @importFrom stats sd
 #'
 colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 
@@ -71,6 +72,7 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' 966-980.
 #'
 #' @export
+#' @importFrom stats dnorm
 
 item_dmacs <- function (LambdaR, ThreshR,
                         LambdaF, ThreshF,
@@ -118,11 +120,7 @@ item_dmacs <- function (LambdaR, ThreshR,
 #' categorical indicators) for the focal group.
 #' @param MeanF is the factor mean in the focal group
 #' @param VarF is the factor variances in the focal group.
-#' @param SD is the indicator standard deviations to be used as
-#' the denominator of the dmacs effect size. This will usually either be
-#' pooled standard deviation for the indicator or the standard deviation
-#' for the indicator in the reference group.
-#' \@param categorical is a Boolean variable declaring whether the variables
+#' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
 #' provided, categorical defaults to \code{FALSE}, although if a vector of
@@ -156,6 +154,7 @@ item_dmacs <- function (LambdaR, ThreshR,
 #' 966-980.
 #'
 #' @export
+#' @importFrom stats dnorm
 
 delta_mean_item <- function (LambdaR, ThreshR,
                              LambdaF, ThreshF,
@@ -250,6 +249,7 @@ delta_var <- function (LambdaR, LambdaF, VarF) {
 #'
 #' @return The expected value of the indicator when the factor score is \code{Theta}
 #' @keywords internal
+#' @importFrom stats pnorm
 
 expected_value <- function (Lambda, Thresh, Theta, categorical = FALSE) {
   ## if more than one threshold, we must be in a categorical situation -- this line still needs to be tested with categorical variables
@@ -260,7 +260,7 @@ expected_value <- function (Lambda, Thresh, Theta, categorical = FALSE) {
     ## categories go from 0 to number of thresholds
     max <- length(Thresh)
     ## let's be lazy and make a max+1 category that is impossible to attain
-    Thresh[max+1] <- 99999
+    Thresh[max+1] <- 9999999
 
     ## I know for loops are bad, but using both current and next element of vector in sapply is hard for me!
     expected <- 0
