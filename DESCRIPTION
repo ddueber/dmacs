@@ -7,6 +7,8 @@ Authors@R: c(person("David", "Dueber", role=c("aut", "cre"), email="david.dueber
 Maintainer: David Dueber <david.dueber@uky.edu>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
+URL: https://github.com/ddueber/dmacs
+BugReports: https://github.com/ddueber/dmacs/issues
 License: CC0
 Encoding: UTF-8
 LazyData: true
