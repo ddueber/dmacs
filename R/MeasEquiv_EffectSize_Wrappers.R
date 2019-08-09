@@ -337,7 +337,7 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", ...) {
 
   ## Check to see if we are using categorical or linear variables, because Thresh works differently in those cases
   if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
-    ThreshList <- lapply(3, function(x) {x$nu})
+    ThreshList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$nu})
     categorical  <- FALSE
   } else {
     ## Need the item names so we can grepl them
