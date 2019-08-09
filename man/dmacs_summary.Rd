@@ -80,7 +80,7 @@ differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 
 \examples{
 LambdaList <- list(Group1 <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1),
-                   Group2 <- matric(c(1.00, 0.76,  1.31, 0.98), ncol = 1))
+                   Group2 <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1))
 ThreshList <- list(Group1 <- c(0.00, 1.28, -0.82, 0.44),
                    Group2 <- c(0.00, 0.65, -0.77, 0.47))
 MeanList   <- list(Group1 <- 0.21,
