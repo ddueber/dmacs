@@ -52,8 +52,8 @@
 #' package
 #'
 #' @examples
-#' LambdaList <- list(Group1 <- c(1.00, 0.74,  1.14, 0.92),
-#'                    Group2 <- c(1.00, 0.76,  1.31, 0.98))
+#' LambdaList <- list(Group1 <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1),
+#'                    Group2 <- matric(c(1.00, 0.76,  1.31, 0.98), ncol = 1))
 #' ThreshList <- list(Group1 <- c(0.00, 1.28, -0.82, 0.44),
 #'                    Group2 <- c(0.00, 0.65, -0.77, 0.47))
 #' MeanList   <- list(Group1 <- 0.21,
@@ -172,8 +172,8 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' models in the current version of this package
 #'
 #' @examples
-#' LambdaF <- c(1.00, 0.74,  1.14, 0.92)
-#' LambdaR <- c(1.00, 0.76,  1.31, 0.98)
+#' LambdaF <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1)
+#' LambdaR <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1)
 #' ThreshF <- c(0.00, 1.28, -0.82, 0.44)
 #' ThreshR <- c(0.00, 0.65, -0.77, 0.47)
 #' MeanF   <- 0.21

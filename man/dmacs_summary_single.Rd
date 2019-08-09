@@ -31,8 +31,9 @@ do \strong{not} provide a matrix of thresholds.}
 \item{SD}{is a vector of indicator observed standard deviations used as
 the denominator of the dmacs effect size. This will usually either be
 pooled standard deviations or the standard deviation of the reference
-group.
-\@param categorical is a Boolean variable declaring whether the variables
+group.}
+
+\item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
 categorical and others are continuous are not supported. If no value is
 provided, categorical defaults to \code{FALSE}, although if multiple
@@ -73,8 +74,8 @@ differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 }
 
 \examples{
-LambdaF <- c(1.00, 0.74,  1.14, 0.92)
-LambdaR <- c(1.00, 0.76,  1.31, 0.98)
+LambdaF <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1)
+LambdaR <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1)
 ThreshF <- c(0.00, 1.28, -0.82, 0.44)
 ThreshR <- c(0.00, 0.65, -0.77, 0.47)
 MeanF   <- 0.21

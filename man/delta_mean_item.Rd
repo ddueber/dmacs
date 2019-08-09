@@ -26,16 +26,7 @@ categorical indicators) for the focal group.}
 
 \item{VarF}{is the factor variances in the focal group.}
 
-\item{stepsize}{is the interval width for the Riemann sum used to estimate
-the integral in equation 6 of Nye & Drasgow (2011). Default value is .001.
-A larger value can be used for faster performance; accuracy is
-excellent at \code{stepsize = .01} in my simulations.}
-
-\item{SD}{is the indicator standard deviations to be used as
-the denominator of the dmacs effect size. This will usually either be
-pooled standard deviation for the indicator or the standard deviation
-for the indicator in the reference group.
-\@param categorical is a Boolean variable declaring whether the variables
+\item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
 categorical and others are continuous are not supported. If no value is
 provided, categorical defaults to \code{FALSE}, although if a vector of
@@ -44,6 +35,11 @@ thresholds are provided, categorical will be forced to
 lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 for other categorical models (e.g., IRT parameterization) to be supported,
 e-mail the maintainer.}
+
+\item{stepsize}{is the interval width for the Riemann sum used to estimate
+the integral in equation 6 of Nye & Drasgow (2011). Default value is .001.
+A larger value can be used for faster performance; accuracy is
+excellent at \code{stepsize = .01} in my simulations.}
 }
 \value{
 The expected bias in item mean due to
