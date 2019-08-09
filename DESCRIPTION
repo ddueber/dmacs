@@ -1,0 +1,15 @@
+Package: dmacs
+Type: Package
+Title: Measurement Nonequivalence Effect Size Calculator
+Version: 0.1.0
+Authors@R: c(person("David", "Dueber", role=c("aut", "cre"), email="david.dueber@uky.edu"),
+             person("Hao", "Zhou", role="ctb"))
+Maintainer: David Dueber <david.dueber@uky.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    lavaan, MplusAutomation
+RoxygenNote: 6.1.1
