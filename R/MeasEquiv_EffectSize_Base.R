@@ -81,7 +81,7 @@ item_dmacs <- function (LambdaR, ThreshR,
                         stepsize = .001) {
 
   ## If item does not load on factor, return NA
-  if(LambdaR == 0) {return(NA)}
+  if (LambdaR == 0) {return(NA)}
 
   ## if more than one threshold, we must be in a categorical situation
   if (length(ThreshR) > 1) { categorical <- TRUE}

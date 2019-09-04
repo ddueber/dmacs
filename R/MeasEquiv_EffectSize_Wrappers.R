@@ -186,7 +186,7 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' measurement equivalence: Understanding the practical importance of
 #' differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 #' 966-980.
-#' @export
+#' @keywords internal
 
 
 dmacs_summary_single <- function (LambdaR, ThreshR,
@@ -494,8 +494,11 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ..
       ## We need the sample sizes so that we can pool
       ## This is faster, but harder to follow than making separate SD and SS lists
       RawSDList <- lapply (Groups, function (G) {
+        ## MplusAutomation does a terrible job at organizing fit$sampstat - the groups are given the wrong names!!
+        ## So we are going to take the Group name and turn it into an index
+        GIndex <- which(Groups == G)
         ## This variable is just for readability
-        GroupCounts <- fit$sampstat[[G]]$proportions.counts
+        GroupCounts <- fit$sampstat[[GIndex]]$proportions.counts
         ## Make a vector of item SDs
         sapply(ItemNames, function (I) {
           ## Get the counts for each category, make a vector with the right number in each category, then get the SD
@@ -514,8 +517,8 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ..
       })
 
     } else if (dtype == "glass") {
-      G <- RefGroup
-      GroupCounts <- fit$sampstat[[G]]$proportions.counts
+      ## MplusAutomation organizes fit$sampstat strangely, so we need the index here
+      GroupCounts <- fit$sampstat[[RefGroup]]$proportions.counts
       ## Make a vector of item SDs
       ItemSDs <- sapply(ItemNames, function (I) {
         ## Get the counts for each category, make a vector with the right number in each category, then get the SD
@@ -537,7 +540,10 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ..
     if (dtype == "pooled") {
       ## Should probably throw an error if sampstat is not included
       RawSDList <- lapply(Groups, function (G) {
-        sqrt(diag(fit$sampstat[[G]]$covariances))
+        ## MplusAutomation does a terrible job at organizing fit$sampstat - the groups are given the wrong names!!
+        ## So we are going to take the Group name and turn it into an index
+        GIndex <- which(Groups == G)
+        sqrt(diag(fit$sampstat[[GIndex]]$covariances))
       })
       ## Now we need to fetch the group sample sizes... which MplusAutomation does not do for us!!!
       FitLines <- readLines(fit0)
@@ -555,8 +561,7 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ..
             ((GroupCounts[[G]]-1) + (GroupCounts[[RefGroup]]-1))
       })
     } else if (dtype == "glass") {
-      G <- RefGroup
-      ItemSDs <- sqrt(diag(fit$sampstat[[G]]$covariances))
+      ItemSDs <- sqrt(diag(fit$sampstat[[RefGroup]]$covariances))
       SDList <- lapply(Groups, function (x) {ItemSDs})
     } else {
       stop("Only \"pooled\" and \"glass\" SD types are supported")
