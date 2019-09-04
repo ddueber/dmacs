@@ -186,7 +186,7 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' measurement equivalence: Understanding the practical importance of
 #' differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 #' 966-980.
-#' @keywords internal
+#' @export
 
 
 dmacs_summary_single <- function (LambdaR, ThreshR,
@@ -196,6 +196,9 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
 
   ## if more than one threshold, we must be in a categorical situation
   if (length(ThreshR[[1]]) > 1) { categorical <- TRUE }
+
+  ## IMPORTANT: if categorical, ThreshR really needs to be a list indexed by item
+  if (categorical && !is.list(ThreshR)) stop("Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
 
   ## If unidimensional, then things are straightforward, otherwise not so much!!
   if (ncol(LambdaR) == 1) {
@@ -229,8 +232,6 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
     VarF  <- as.vector(VarF)
     VarF  <- matrix(rep(VarF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
 
-    ## IMPORTANT: if categorical, ThreshR really needs to be a list indexed by item
-    if (categorical && !is.list(ThreshR)) stop("Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
     DMACS <- as.data.frame(matrix(mapply(item_dmacs, LambdaR, ThreshR,
                       LambdaF, ThreshF,
                       MeanF, VarF, SD, categorical, ...), nrow = nrow(LambdaR)))

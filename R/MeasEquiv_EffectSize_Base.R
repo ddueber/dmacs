@@ -226,7 +226,7 @@ delta_var <- function (LambdaR, LambdaF, VarF, categorical = FALSE) {
 
   if(categorical) {
     warning("Delta variance can only be computed for linear models, not for categorical ones")
-    NULL
+    return(NULL)
   }
   delta_cov_mat <- matrix(nrow=length(LambdaR), ncol=length(LambdaR))
   ## I know for loops are supposed to be bad, but this is SO CLEAN!

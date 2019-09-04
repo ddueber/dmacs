@@ -14,6 +14,10 @@ reference group.}
 focal group.}
 
 \item{VarF}{is the factor variance of the focal group.}
+
+\item{categorical}{is a Boolean variable declaring whether the variables
+in the model are ordered categorical. Categorical indicators are not supported
+for this function.}
 }
 \value{
 The expected bias in total score variance due to

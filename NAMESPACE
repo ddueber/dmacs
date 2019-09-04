@@ -3,6 +3,7 @@
 export(delta_mean_item)
 export(delta_var)
 export(dmacs_summary)
+export(dmacs_summary_single)
 export(item_dmacs)
 export(lavaan_dmacs)
 export(mplus_dmacs)

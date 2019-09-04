@@ -13,8 +13,9 @@ expected_value(Lambda, Thresh, Theta, categorical = FALSE)
 thresholds (categorical indicator) for the indicator.}
 
 \item{Theta}{is the value of the factor for which the expected value is
-to be computed
-\@param categorical is a Boolean variable declaring whether the variables
+to be computed}
+
+\item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
 categorical and others are continuous are not supported. If no value is
 provided, categorical defaults to \code{FALSE}, although if multiple
