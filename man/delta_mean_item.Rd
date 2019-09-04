@@ -70,7 +70,6 @@ ThreshF <- 1.28
 ThreshR <- 0.65
 MeanF   <- 0.21
 VarF    <- 1.76
-SD      <- 1.85
-delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD)
+delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF)
 
 }

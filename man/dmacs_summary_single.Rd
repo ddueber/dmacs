@@ -84,3 +84,4 @@ SD      <- c(2.12, 1.85,  1.12, 3.61)
 dmacs_summary_single(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD)
 
 }
+\keyword{internal}

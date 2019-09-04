@@ -21,7 +21,7 @@
 #' observed standard deviations used as the denominator of the dmacs effect
 #' size. This will usually either be pooled standard deviations or the
 #' standard deviation of the reference group. Each group, including the
-#' reference group must be included in SDList (although the standard
+#' reference group, must be included in SDList (although the standard
 #' deviations for the reference group are ignored).
 #' @param Groups is a vector of group names. If no value is provided,
 #' dmacs_summary will try to use \code{names(LambdaList)}; if LambdaList
@@ -44,12 +44,12 @@
 #' \code{dmacs_summary} calls, most likely \code{stepsize} for the
 #' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
 #'
-#' @return A list, indexed by group, of lists of measurement nonequivalence
+#' @return A list, indexed by groups, of lists of measurement nonequivalence
 #' effects  from Nye and Drasgow (2011), including dmacs, expected bias in the mean score by item,
 #' expected bias in the mean total score, and expected bias in the variance
 #' of the total score. Expected bias in the variance of the total score is
-#' only supplied for unidimensional models in the current version of this
-#' package
+#' only supplied for unidimensional models with linear indicators (i.e., not categorical)
+#' in the current version of this package.
 #'
 #' @examples
 #' LambdaList <- list(Group1 <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1),
@@ -194,7 +194,7 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
                                   MeanF, VarF, SD,
                                   categorical = FALSE, ...) {
 
-  ## if more than one threshold, we must be in a categorical situation -- this line still needs to be tested with categorical variables
+  ## if more than one threshold, we must be in a categorical situation
   if (length(ThreshR[[1]]) > 1) { categorical <- TRUE }
 
   ## If unidimensional, then things are straightforward, otherwise not so much!!
@@ -212,11 +212,15 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
     MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
     names(MeanDiff) <- colnames(LambdaR)
 
-    VarDiff <- delta_var(LambdaR, LambdaF, VarF)
-    names(VarDiff) <- colnames(LambdaR)
+    ## VarDiff only works for linear indicators at the moment
+    if (!categorical) {
+      VarDiff <- delta_var(LambdaR, LambdaF, VarF)
+      names(VarDiff) <- colnames(LambdaR)
+      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff, VarDiff = VarDiff)
+    } else {
+      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
+    }
 
-
-    list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff, VarDiff = VarDiff)
   } else {
 
     ## Need to give MeanF and VarF (which are vectors indexed by factor) the same structure as LambdaR (an array indexed by itemsxfactors)
@@ -225,9 +229,8 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
     VarF  <- as.vector(VarF)
     VarF  <- matrix(rep(VarF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
 
-    ## Note - The mapply here may not be matching everything up correctly.
-    ## Double check the computations and fix as necessary
-    ## IMPORTANT: if categorical, ThreshR really needs to be a list indexed by item (if it is an array, we should fix that first!!)
+    ## IMPORTANT: if categorical, ThreshR really needs to be a list indexed by item
+    if (categorical && !is.list(ThreshR)) stop("Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
     DMACS <- as.data.frame(matrix(mapply(item_dmacs, LambdaR, ThreshR,
                       LambdaF, ThreshF,
                       MeanF, VarF, SD, categorical, ...), nrow = nrow(LambdaR)))

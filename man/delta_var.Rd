@@ -4,7 +4,7 @@
 \alias{delta_var}
 \title{Expecte bias to total score variance}
 \usage{
-delta_var(LambdaR, LambdaF, VarF)
+delta_var(LambdaR, LambdaF, VarF, categorical = FALSE)
 }
 \arguments{
 \item{LambdaR}{is the vector of factor loadings for the
@@ -22,7 +22,7 @@ measurement nonequivalence in equation 7, 8, and 9 of Nye & Drasgow (2011).
 \description{
 \code{delta_var} computes the expected bias in total score variance due
 to measurement nonequivalence. \code{delta_var} will only work for
-unidimensional models.
+unidimensional linear models (not categorical).
 }
 \details{
 \code{delta_var} is called by \code{dmacs_summary_single}, which

@@ -80,6 +80,9 @@ item_dmacs <- function (LambdaR, ThreshR,
                         SD, categorical = FALSE,
                         stepsize = .001) {
 
+  ## If threshold vectors do not have the same length, throw an error
+  if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
+
   ## If item does not load on factor, return NA
   if (LambdaR == 0) {return(NA)}
 
@@ -144,8 +147,7 @@ item_dmacs <- function (LambdaR, ThreshR,
 #' ThreshR <- 0.65
 #' MeanF   <- 0.21
 #' VarF    <- 1.76
-#' SD      <- 1.85
-#' delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD)
+#' delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF)
 #'
 #' @section References:
 #' Nye, C. & Drasgow, F. (2011). Effect size indices for analyses of
@@ -161,6 +163,9 @@ delta_mean_item <- function (LambdaR, ThreshR,
                              MeanF, VarF,
                              categorical = FALSE, stepsize = .001) {
 
+  ## If threshold vectors do not have the same length, throw an error
+  if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
+
   ## If item does not load on factor, return NA
   if(LambdaR == 0) {return(NA)}
 
@@ -170,6 +175,8 @@ delta_mean_item <- function (LambdaR, ThreshR,
   ## integrate over z from -5 to 5 by .001, which gives us 10,000 integration points, which is overkill
   z <- seq(-5, 5, stepsize)
   ## Compute the integrand using the expected value function expected_value
+  ## Note that this is a lot faster than using a for loop and a bit faster than using sapply... but it doesn't really make sense to me
+  ## what's happening is that sinze z s a vector, the integrand is being computed for each value in z, and integrand is than a vector of these values
   integrand <- (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
                   expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical)) * dnorm(z)
   ## Now, sum it to get the integral. Stepsize is in z units, not theta units!!
@@ -182,7 +189,7 @@ delta_mean_item <- function (LambdaR, ThreshR,
 #'
 #' \code{delta_var} computes the expected bias in total score variance due
 #' to measurement nonequivalence. \code{delta_var} will only work for
-#' unidimensional models.
+#' unidimensional linear models (not categorical).
 #'
 #' \code{delta_var} is called by \code{dmacs_summary_single}, which
 #' in turn is called by \code{\link{lavaan_dmacs}} and
@@ -194,6 +201,9 @@ delta_mean_item <- function (LambdaR, ThreshR,
 #' @param LambdaF is the vector of factor loadings for the
 #' focal group.
 #' @param VarF is the factor variance of the focal group.
+#' @param categorical is a Boolean variable declaring whether the variables
+#' in the model are ordered categorical. Categorical indicators are not supported
+#' for this function.
 #'
 #' @return The expected bias in total score variance due to
 #' measurement nonequivalence in equation 7, 8, and 9 of Nye & Drasgow (2011).
@@ -212,15 +222,19 @@ delta_mean_item <- function (LambdaR, ThreshR,
 #'
 #' @export
 
-delta_var <- function (LambdaR, LambdaF, VarF) {
+delta_var <- function (LambdaR, LambdaF, VarF, categorical = FALSE) {
 
+  if(categorical) {
+    warning("Delta variance can only be computed for linear models, not for categorical ones")
+    NULL
+  }
   delta_cov_mat <- matrix(nrow=length(LambdaR), ncol=length(LambdaR))
   ## I know for loops are supposed to be bad, but this is SO CLEAN!
   for (i in 1:length(LambdaR)) {
     for (j in 1:length(LambdaR)) {
       delta_cov_mat[i,j] <- LambdaR[[j]]*(LambdaF[[i]]-LambdaR[[i]])*VarF
                           + LambdaR[[i]]*(LambdaF[[j]]-LambdaR[[j]])*VarF
-      + (LambdaF[[i]]-LambdaR[[i]])*(LambdaF[[j]]-LambdaR[[j]])*VarF
+                         + (LambdaF[[i]]-LambdaR[[i]])*(LambdaF[[j]]-LambdaR[[j]])*VarF
     }
   }
   sum(delta_cov_mat)
@@ -237,7 +251,7 @@ delta_var <- function (LambdaR, LambdaF, VarF) {
 #' thresholds (categorical indicator) for the indicator.
 #' @param Theta is the value of the factor for which the expected value is
 #' to be computed
-#' \@param categorical is a Boolean variable declaring whether the variables
+#' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
 #' provided, categorical defaults to \code{FALSE}, although if multiple
@@ -252,8 +266,9 @@ delta_var <- function (LambdaR, LambdaF, VarF) {
 #' @importFrom stats pnorm
 
 expected_value <- function (Lambda, Thresh, Theta, categorical = FALSE) {
-  ## if more than one threshold, we must be in a categorical situation -- this line still needs to be tested with categorical variables
-  if (length(Thresh[[1]]) > 1) { categorical <- TRUE }
+
+  ## if more than one threshold, we must be in a categorical situation
+  if (length(Thresh) > 1) { categorical <- TRUE }
 
   if (categorical) {
     ## Graded Response model with probit link.

@@ -26,7 +26,7 @@ For unidimensional models, this is simply a list of factor variances.}
 observed standard deviations used as the denominator of the dmacs effect
 size. This will usually either be pooled standard deviations or the
 standard deviation of the reference group. Each group, including the
-reference group must be included in SDList (although the standard
+reference group, must be included in SDList (although the standard
 deviations for the reference group are ignored).}
 
 \item{Groups}{is a vector of group names. If no value is provided,
@@ -54,12 +54,12 @@ e-mail the maintainer.}
 \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.}
 }
 \value{
-A list, indexed by group, of lists of measurement nonequivalence
+A list, indexed by groups, of lists of measurement nonequivalence
 effects  from Nye and Drasgow (2011), including dmacs, expected bias in the mean score by item,
 expected bias in the mean total score, and expected bias in the variance
 of the total score. Expected bias in the variance of the total score is
-only supplied for unidimensional models in the current version of this
-package
+only supplied for unidimensional models with linear indicators (i.e., not categorical)
+in the current version of this package.
 }
 \description{
 \code{dmacs_summary} returns a summary of measurement non-equivalence
