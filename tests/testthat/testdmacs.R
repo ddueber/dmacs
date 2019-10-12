@@ -51,13 +51,13 @@ test_that("dmacs_summary is not broken", {
   Groups <- c("Group1", "Group2")
   RefGroup <- "Group2"
 
-  expect_equal(dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList, Groups, RefGroup), list(DMACS = c(0.00000000, 0.38997060, 0.24811349, 0.02880497), ItemDeltaMean = c(0.00000000, 0.83021704, -0.11369383, -0.05651525), MeanDiff = 0.660008, VarDiff = -1.782), tolerance = .000001)
+  expect_equal(dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList, Groups, RefGroup), list(DMACS = c(0.00000000, 0.38997060, 0.24811349, 0.02880497), ItemDeltaMean = c(0.00000000, 0.83021704, -0.11369383, -0.05651525), MeanDiff = 0.660008, VarDiff = -1.782), tolerance = .00001)
   expect_known_output(dmacs_summary(LambdaList2, ThreshList, MeanList, VarList, SDList, Groups, RefGroup), "d_sum_multi.rds", update = FALSE)
   expect_error(dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList, Groups, RefGroup, categorical = TRUE),"Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
-  expect_equal(dmacs_summary(LambdaList, ThreshList2, MeanList, VarList, SDList, Groups, RefGroup, categorical = TRUE), list(DMACS = c(0.000000000, 0.083322420, 0.022104064, 0.004459561), ItemDeltaMean = c(0.000000000, -0.160378048,  0.003161234,  0.011124317), MeanDiff = -0.1460925), tolerance = .000001)
-  expect_equal(dmacs_summary(LambdaList, ThreshList3, MeanList, VarList, SDList, Groups, RefGroup), list(DMACS = c(0.02577838, 0.04575298, 0.22451775, 0.01621731), ItemDeltaMean = c(-0.05325132,  0.08741389, -0.26369274, -0.05811619), MeanDiff = -0.2876464), tolerance = .000001)
+  expect_equal(dmacs_summary(LambdaList, ThreshList2, MeanList, VarList, SDList, Groups, RefGroup, categorical = TRUE), list(DMACS = c(0.000000000, 0.083322420, 0.022104064, 0.004459561), ItemDeltaMean = c(0.000000000, -0.160378048,  0.003161234,  0.011124317), MeanDiff = -0.1460925), tolerance = .00001)
+  expect_equal(dmacs_summary(LambdaList, ThreshList3, MeanList, VarList, SDList, Groups, RefGroup), list(DMACS = c(0.02577838, 0.04575298, 0.22451775, 0.01621731), ItemDeltaMean = c(-0.05325132,  0.08741389, -0.26369274, -0.05811619), MeanDiff = -0.2876464), tolerance = .00001)
   expect_error(dmacs_summary(LambdaList, ThreshList4, MeanList, VarList, SDList, Groups, RefGroup), "Item must have same number of thresholds in both reference and focal group")
-  expect_equal(dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList), list(DMACS = c(0.00000000, 0.46819121, 0.13742292, 0.04046284), ItemDeltaMean = c(0.00000000, -0.72487849, 0.09526908, 0.04792394), MeanDiff = -0.5816855, VarDiff = 1.273), tolerance = .000001)
+  expect_equal(dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList), list(DMACS = c(0.00000000, 0.46819121, 0.13742292, 0.04046284), ItemDeltaMean = c(0.00000000, -0.72487849, 0.09526908, 0.04792394), MeanDiff = -0.5816855, VarDiff = 1.273), tolerance = .00001)
 })
 
 ## dmacs_summary_single is tested by dmacs_summary
