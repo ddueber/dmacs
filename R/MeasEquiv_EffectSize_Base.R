@@ -176,7 +176,7 @@ delta_mean_item <- function (LambdaR, ThreshR,
   z <- seq(-5, 5, stepsize)
   ## Compute the integrand using the expected value function expected_value
   ## Note that this is a lot faster than using a for loop and a bit faster than using sapply... but it doesn't really make sense to me
-  ## what's happening is that sinze z is a vector, the integrand is being computed for each value in z, and integrand is than a vector of these values
+  ## what's happening is that since z is a vector, the integrand is being computed for each value in z, and integrand is than a vector of these values
   integrand <- (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
                   expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical)) * dnorm(z)
   ## Now, sum it to get the integral. Stepsize is in z units, not theta units!!
