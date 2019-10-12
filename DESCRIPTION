@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: c(person("David", "Dueber", role=c("aut", "cre"), email="david.dueber@uky.edu"),
              person("Hao", "Zhou", role="ctb"))
 Maintainer: David Dueber <david.dueber@uky.edu>
-Description: Computes measurement nonequivalence effect size indices described ny Nye and Drasgow (2011).
+Description: Computes measurement nonequivalence effect size indices described in Nye and Drasgow (2011).
     Use four spaces when indenting paragraphs within the Description.
 URL: https://github.com/ddueber/dmacs
 BugReports: https://github.com/ddueber/dmacs/issues
