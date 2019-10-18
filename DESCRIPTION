@@ -6,7 +6,6 @@ Authors@R: c(person("David", family = "Dueber", role=c("aut", "cre"), email="dav
              person("Hao", family = "Zhou", role=c("ctb")))
 Maintainer: David Dueber <david.dueber@uky.edu>
 Description: Computes measurement nonequivalence effect size indices described in Nye and Drasgow (2011) <doi:10.1037/a0022955>. 
-Reference: Nye, C. D., & Drasgow, F. (2011). Effect size indices for analyses of measurement equivalence: Understanding the practical importance of differences between groups. Journal of Applied Psychology, 96(5), 966, <doi:10.1037/a0022955>.
 URL: https://github.com/ddueber/dmacs
 BugReports: https://github.com/ddueber/dmacs/issues
 License: CC0
