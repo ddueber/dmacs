@@ -2,7 +2,7 @@
 % Please edit documentation in R/MeasEquiv_EffectSize_Base.R
 \name{delta_var}
 \alias{delta_var}
-\title{Expecte bias to total score variance}
+\title{Expected bias to total score variance}
 \usage{
 delta_var(LambdaR, LambdaF, VarF, categorical = FALSE)
 }

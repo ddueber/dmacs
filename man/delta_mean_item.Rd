@@ -2,7 +2,7 @@
 % Please edit documentation in R/MeasEquiv_EffectSize_Base.R
 \name{delta_mean_item}
 \alias{delta_mean_item}
-\title{Expecte bias to item mean}
+\title{Expected bias to item mean}
 \usage{
 delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF,
   categorical = FALSE, stepsize = 0.001)
