@@ -55,3 +55,10 @@ the output will not be correct. When an indicator loads on multiple orthogonal f
 bias in item mean will have to be summed across factors by the user. 
 
 Correlated uniquenesses will not cause any problems with computation of dmacs indices.
+
+## Next Version
+
+Future versions will hopefully include the following:
+* Support for crossloadings on correlated factors (requires multidimensional integration)
+* a plot method for dmacs objects that works like mirt's DTF
+* a vignette, maybe
