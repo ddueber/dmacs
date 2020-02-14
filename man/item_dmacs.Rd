@@ -5,7 +5,7 @@
 \title{dmacs measurement nonequivalence effect size}
 \usage{
 item_dmacs(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD,
-  categorical = FALSE, stepsize = 0.001)
+  categorical = FALSE)
 }
 \arguments{
 \item{LambdaR}{is the factor loading of the item onto the factor of
@@ -40,11 +40,6 @@ thresholds are provided, categorical will be forced to
 lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 for other categorical models (e.g., IRT parameterization) to be supported,
 e-mail the maintainer.}
-
-\item{stepsize}{is the interval width for the Riemann sum used to estimate
-the integral in equation 3 of Nye & Drasgow (2011). Default value is .001.
-A larger value can be used for faster performance; accuracy is
-excellent at \code{stepsize = .01} in my simulations.}
 }
 \value{
 The dmacs effect size of equation 3 of Nye & Drasgow (2011).

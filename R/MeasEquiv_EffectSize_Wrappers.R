@@ -270,16 +270,24 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
 #' or the index of the reference group (as a number). RefGroup defaults to
 #' the first group if no value is provided. It is strongly recommended to
 #' provide the reference group as a string, since group names in data are
-#' often ordered by their appearance in the data, not alphabetically.
+#' often ordered by their appearance in the data, not alphabetically. When
+#' \code{long = TRUE}, RefGroup is either the index of the reference timepoint
+#' or the name of the latent factor at the reference timepoint.
 #' @param dtype described the pooling of standard deviations for use in the
 #' denominator of the dmacs effect size. Possibilities are "pooled" for
 #' pooled standard deviations, or "glass" for always using the standard
 #' deviation of the reference group.
+#' @param long is a Boolean variable indicating whether measurement
+#' equivalence is being tested longitudinally. Defaults to \code{FALSE},
+#' which corresponds to multi-group measurement equivalence testing.
+#'  Only unidimensional models are supported with longitudinal data.
+#'  Note that output will always use indicator names from the reference
+#'  timepoint.
 #' @param ... other parameters to be used in functions that
 #' \code{lavaan_dmacs} calls, most likely \code{stepsize} for the
 #' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
 #'
-#' @return A list, indexed by group, of lists of measurement nonequivalence
+#' @return A list, indexed by group or timepoint, of lists of measurement nonequivalence
 #' effects from Nye and Drasgow (2011), including dmacs, expected bias in
 #' the mean score by item,
 #' expected bias in the mean total score, and expected bias in the variance
@@ -305,59 +313,130 @@ dmacs_summary_single <- function (LambdaR, ThreshR,
 #' @export
 
 
-lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", ...) {
+lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...) {
+  if (long) {
+    ## Groups are time-points. We ignore correlated residuals!
 
-  Groups <- names(lavaan::lavInspect(fit, "est"))
+    # Make a vector of factor names
+    Groups <- colnames(lavaan::lavInspect(fit, what = "est")$lambda)
 
-  ## If RefGroup is a string, turn it into an index
-  if (is.character(RefGroup)) {
-    RefGroup <- match(RefGroup, Groups)
-  } else {
-    warning(paste("It is recommended that you provide the name of the reference group as a string; see ?lavaan_dmacs. The reference group being used is", Groups[RefGroup]))
-  }
+    # If RefTime is a name, turn it into an index
+    if (is.character(RefGroup)) { RefGroup <- match(RefGroup, Groups) }
 
-  ## factor loadings, factor means, and factor variances are easy
-  LambdaList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$lambda})
-  MeanList   <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$alpha})
-  VarList    <- lapply(lavaan::lavInspect(fit, "est"), function(x) {diag(x$psi)})
+    # Store the estimates and the data, because I am about to reference them a LOT of times
+    FitEst  <- lavaan::lavInspect(fit, "est")
+    FitData <- lavaan::lavInspect(fit, "data")
 
-  ## compute the sds for use in Equation 3 of Nye and Drasgow (2011)
-  if (dtype == "pooled") {
-    refsd  <- colSD(lavaan::lavInspect(fit, "data")[[RefGroup]], na.rm = TRUE)
-    refn   <- colSums(!is.na(lavaan::lavInspect(fit, "data")[[RefGroup]]))
-    SDList <- lapply(lavaan::lavInspect(fit, "data"), function(x) {
-                focsd <- colSD(x, na.rm = TRUE)
-                focn  <- colSums(!is.na(x))
-                ((focn-1)*focsd+(refn-1)*refsd)/((focn-1)+(refn-1))
-              })
-  } else if (dtype == "glass") { ## Glass says to always use the SD of the reference group
-    SDs    <- colSD(lavaan::lavInspect(fit, "data")[[RefGroup]], na.rm = TRUE)
-    SDList <- lapply(1:length(Groups), function (x) {SDs})
-    names(SDList) <- Groups
-  } else {
-    stop("Only \"pooled\" and \"glass\" SD types are supported")
-  }
-
-
-  ## Check to see if we are using categorical or linear variables, because Thresh works differently in those cases
-  if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
-    ThreshList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$nu})
-    categorical  <- FALSE
-  } else {
-    ## Need the item names so we can grepl them
-    ItemNames <- rownames(lavaan::lavInspect(fit, "est")[[1]]$lambda)
-
-    ## I don't know why I am not doing this as nested for loops!! Nesting lapply inside of lapply is awful
-    ThreshList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {
-      ## This next line makes a LIST indexed by item, which ensures that the mapply in DIF_effect_summary_single iterates over the thresholds properly
-      lapply(ItemNames,
-             ## The funny paste0 is in case one item name is an extension of another item name (e.g., item10 vs item1)
-             function (iname, threshlist) {threshlist[grepl(paste0(iname, "\\|"), rownames(threshlist))]},
-             x$tau)
+    ## factor loadings, factor means, and factor variances are easy
+    LambdaList <- lapply(Groups, function(x) {
+      Lambdas <- FitEst$lambda[FitEst$lambda[,x] != 0, x]
+      matrix(Lambdas, ncol = 1, dimnames = list(names(Lambdas)))
     })
+    names(LambdaList) <- Groups
+    MeanList   <- lapply(Groups, function(x) {
+      FitEst$alpha[x,1]
+    })
+    names(MeanList) <- Groups
+    VarList    <- lapply(Groups, function(x) {
+      FitEst$psi[x,x]
+    })
+    names(VarList) <- Groups
 
-    categorical  <- TRUE
+    ## compute the sds for use in Equation 3 of Nye and Drasgow (2011)
+    if (dtype == "pooled") {
+      refsd  <- colSD(FitData[,rownames(LambdaList[[RefGroup]])], na.rm = TRUE)
+      refn   <- colSums(!is.na(FitData[,rownames(LambdaList[[RefGroup]])]))
+      SDList <- lapply(1:length(Groups), function (x) {
+        focsd <- colSD(FitData[, rownames(LambdaList[[x]])], na.rm = TRUE)
+        focn  <- colSums(!is.na(FitData[, rownames(LambdaList[[x]])]))
+        ((focn-1)*focsd+(refn-1)*refsd)/((focn-1)+(refn-1))
+      })
+    } else if (dtype == "glass") { ## Glass says to always use the SD of the reference group
+      SDs    <- colSD(FitData[,rownames(LambdaList[[RefGroup]])], na.rm = TRUE)
+      SDList <- lapply(1:length(Groups), function (x) {SDs})
+      names(SDList) <- Groups
+    } else {
+      stop("Only \"pooled\" and \"glass\" SD types are supported")
+    }
+
+    ## Check to see if we are using categorical or linear variables, because Thresh works differently in those cases
+    if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
+      ThreshList <- lapply(1:length(Groups), function (x) {
+        FitEst$nu[rownames(LambdaList[[x]]),1]
+      })
+      categorical  <- FALSE
+    } else {
+      ## Make a list indexed by group
+      ThreshList <- lapply(1:length(Groups), function (x) {
+        # Fetch indicator names so we can grepl them
+        ItemNames <- rownames(LambdaList[[x]])
+
+        # Make a list index by items
+        lapply(ItemNames, function (y) {
+          # now we need to fetch the thresholds for this item.
+          FitEst$tau[grepl(paste0(y, "\\|"), rownames(FitEst$tau))]
+        })
+      })
+
+      categorical  <- TRUE
+    }
+
+  } else {
+
+    # Now we are doing multi-group measurement equivalence testing
+    Groups <- names(lavaan::lavInspect(fit, "est"))
+
+    ## If RefGroup is a string, turn it into an index
+    if (is.character(RefGroup)) {
+      RefGroup <- match(RefGroup, Groups)
+    } else {
+      warning(paste("It is recommended that you provide the name of the reference group as a string; see ?lavaan_dmacs. The reference group being used is", Groups[RefGroup]))
+    }
+
+    ## factor loadings, factor means, and factor variances are easy
+    LambdaList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$lambda})
+    MeanList   <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$alpha})
+    VarList    <- lapply(lavaan::lavInspect(fit, "est"), function(x) {diag(x$psi)})
+
+    ## compute the sds for use in Equation 3 of Nye and Drasgow (2011)
+    if (dtype == "pooled") {
+      refsd  <- colSD(lavaan::lavInspect(fit, "data")[[RefGroup]], na.rm = TRUE)
+      refn   <- colSums(!is.na(lavaan::lavInspect(fit, "data")[[RefGroup]]))
+      SDList <- lapply(lavaan::lavInspect(fit, "data"), function(x) {
+        focsd <- colSD(x, na.rm = TRUE)
+        focn  <- colSums(!is.na(x))
+        ((focn-1)*focsd+(refn-1)*refsd)/((focn-1)+(refn-1))
+      })
+    } else if (dtype == "glass") { ## Glass says to always use the SD of the reference group
+      SDs    <- colSD(lavaan::lavInspect(fit, "data")[[RefGroup]], na.rm = TRUE)
+      SDList <- lapply(1:length(Groups), function (x) {SDs})
+      names(SDList) <- Groups
+    } else {
+      stop("Only \"pooled\" and \"glass\" SD types are supported")
+    }
+
+
+    ## Check to see if we are using categorical or linear variables, because Thresh works differently in those cases
+    if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
+      ThreshList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$nu})
+      categorical  <- FALSE
+    } else {
+      ## Need the item names so we can grepl them
+      ItemNames <- rownames(lavaan::lavInspect(fit, "est")[[1]]$lambda)
+
+      ## I don't know why I am not doing this as nested for loops!! Nesting lapply inside of lapply is awful
+      ThreshList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {
+        ## This next line makes a LIST indexed by item, which ensures that the mapply in DIF_effect_summary_single iterates over the thresholds properly
+        lapply(ItemNames,
+               ## The funny paste0 is in case one item name is an extension of another item name (e.g., item10 vs item1)
+               function (iname, threshlist) {threshlist[grepl(paste0(iname, "\\|"), rownames(threshlist))]},
+               x$tau)
+      })
+
+      categorical  <- TRUE
+    }
   }
+
 
   Results <- dmacs_summary(LambdaList, ThreshList,
                            MeanList, VarList, SDList,

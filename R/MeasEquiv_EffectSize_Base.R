@@ -48,10 +48,6 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 #' for other categorical models (e.g., IRT parameterization) to be supported,
 #' e-mail the maintainer.
-#' @param stepsize is the interval width for the Riemann sum used to estimate
-#' the integral in equation 3 of Nye & Drasgow (2011). Default value is .001.
-#' A larger value can be used for faster performance; accuracy is
-#' excellent at \code{stepsize = .01} in my simulations.
 #'
 #' @return The dmacs effect size of equation 3 of Nye & Drasgow (2011).
 #'
@@ -73,12 +69,12 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #'
 #' @export
 #' @importFrom stats dnorm
+#' @importFrom stats integrate
 
 item_dmacs <- function (LambdaR, ThreshR,
                         LambdaF, ThreshF,
                         MeanF, VarF,
-                        SD, categorical = FALSE,
-                        stepsize = .001) {
+                        SD, categorical = FALSE) {
 
   ## If threshold vectors do not have the same length, throw an error
   if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
@@ -89,13 +85,21 @@ item_dmacs <- function (LambdaR, ThreshR,
   ## if more than one threshold, we must be in a categorical situation
   if (length(ThreshR) > 1) { categorical <- TRUE}
 
-  ## integrate over z from -5 to 5 by .001, which gives us 10,000 integration points, which is enough!
-  z <- seq(-5, 5, stepsize)
-  ## Compute the integrand using the expected value function expected_value
-  integrand <- (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
-                  expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical))^2 * dnorm(z)
+  ## Create a function for the integrand using the expected value function expected_value
+  ## The sqrt(VarF) is there because we did a change of varianbles into the z metric
+  integrand <- function (z, LambdaF, LambdaR, ThreshF, ThreshR, MeanF, VarF, categorical) {
+
+    (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
+       expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical))^2 * dnorm(z) * sqrt(VarF)
+
+  }
+
   ## Now, sum it to get the integral, and compute the effect size. Stepsize is in z units, not theta units!!
-  sqrt(sum(integrand*stepsize*sqrt(VarF)))/SD
+  sqrt(integrate(integrand, -Inf, Inf,
+                 LambdaF = LambdaF, LambdaR = LambdaR,
+                 ThreshF = ThreshF, ThreshR = ThreshR,
+                 MeanF = MeanF, VarF = VarF,
+                 categorical = categorical)$value)/SD
 
 }
 
@@ -132,10 +136,6 @@ item_dmacs <- function (LambdaR, ThreshR,
 #' lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 #' for other categorical models (e.g., IRT parameterization) to be supported,
 #' e-mail the maintainer.
-#' @param stepsize is the interval width for the Riemann sum used to estimate
-#' the integral in equation 6 of Nye & Drasgow (2011). Default value is .001.
-#' A larger value can be used for faster performance; accuracy is
-#' excellent at \code{stepsize = .01} in my simulations.
 #'
 #' @return The expected bias in item mean due to
 #' measurement nonequivalence in equation 4 of Nye & Drasgow (2011).
@@ -157,11 +157,12 @@ item_dmacs <- function (LambdaR, ThreshR,
 #'
 #' @export
 #' @importFrom stats dnorm
+#' @importFrom stats integrate
 
 delta_mean_item <- function (LambdaR, ThreshR,
                              LambdaF, ThreshF,
                              MeanF, VarF,
-                             categorical = FALSE, stepsize = .001) {
+                             categorical = FALSE) {
 
   ## If threshold vectors do not have the same length, throw an error
   if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
@@ -172,15 +173,20 @@ delta_mean_item <- function (LambdaR, ThreshR,
   ## if more than one threshold, we must be in a categorical situation
   if (length(ThreshR) > 1) { categorical <- TRUE}
 
-  ## integrate over z from -5 to 5 by .001, which gives us 10,000 integration points, which is overkill
-  z <- seq(-5, 5, stepsize)
-  ## Compute the integrand using the expected value function expected_value
-  ## Note that this is a lot faster than using a for loop and a bit faster than using sapply... but it doesn't really make sense to me
-  ## what's happening is that since z is a vector, the integrand is being computed for each value in z, and integrand is than a vector of these values
-  integrand <- (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
-                  expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical)) * dnorm(z)
-  ## Now, sum it to get the integral. Stepsize is in z units, not theta units!!
-  sum(integrand*stepsize*sqrt(VarF))
+  ## Create a function for the integrand using the expected value function expected_value
+  ## The sqrt(VarF) is there because we did a change of varianbles into the z metric
+  integrand <- function(z, LambdaR, LambdaF, ThreshR, ThreshF, MeanF, VarF, categorical) {
+
+    (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
+       expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical)) * dnorm(z) * sqrt(VarF)
+
+  }
+  ## Now, integrate
+  integrate(integrand, -Inf, Inf,
+            LambdaR = LambdaR, LambdaF = LambdaF,
+            ThreshR = ThreshR, ThreshF = ThreshF,
+            MeanF = MeanF, VarF = VarF,
+            categorical = categorical)$value
 
 }
 
