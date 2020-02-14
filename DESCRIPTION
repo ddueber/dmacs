@@ -1,7 +1,7 @@
 Package: dmacs
 Type: Package
 Title: Measurement Nonequivalence Effect Size Calculator
-Version: 0.1.0.9001
+Version: 0.1.0.9001.UNSTABLE.DO.NOT.USE
 Authors@R: c(person("David", family = "Dueber", role=c("aut", "cre"), email="david.dueber@uky.edu"),
              person("Hao", family = "Zhou", role=c("ctb")))
 Maintainer: David Dueber <david.dueber@uky.edu>
