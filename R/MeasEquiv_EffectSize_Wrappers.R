@@ -9,10 +9,8 @@
 #'
 #' @param LambdaList is a list, indexed by groups, of factor loading
 #' matrices (dataframes are allowed).
-#' @param ThreshList is a list, indexed by groups, of vectors of indicator
-#' intercepts (for continuous indicators) or lists, indexed by items, of
-#' vectors of thresholds (for categorical indicators). For categorical
-#' indicators, do \strong{not} provide a matrix of thresholds for each group.
+#' @param NuList is a list, indexed by groups, of vectors of indicator
+#' intercepts.
 #' @param MeanList is a list, indexed by groups, of vectors of factor means.
 #' For unidimensional models, this is simply a list of factor means.
 #' @param VarList is a list, indexed by groups, of vectors of factor variances.
@@ -31,6 +29,13 @@
 #' the first group if no value is provided. It is strongly recommended to
 #' provide the reference group as a string, since group names in data are
 #' often ordered by their appearance in the data, not alphabetically.
+#' @param ThreshList is a list, indexed by groups, of lists, indexed by items, of
+#' vectors of thresholds (for categorical indicators). For categorical
+#' indicators, do \strong{not} provide a matrix of thresholds for each group.
+#' Defaults to \code{NULL} for continuous indicators.
+#' @param ThetaList is a list, indexed by groups, of vectors of item residual
+#' variances for categorical items. Defaults to \code{NULL} for continuous
+#' indicators.
 #' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
@@ -54,7 +59,7 @@
 #' @examples
 #' LambdaList <- list(Group1 <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1),
 #'                    Group2 <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1))
-#' ThreshList <- list(Group1 <- c(0.00, 1.28, -0.82, 0.44),
+#' NuList     <- list(Group1 <- c(0.00, 1.28, -0.82, 0.44),
 #'                    Group2 <- c(0.00, 0.65, -0.77, 0.47))
 #' MeanList   <- list(Group1 <- 0.21,
 #'                    Group2 <- 0.19)
@@ -64,7 +69,7 @@
 #'                    Group2 <- c(NA, NA, NA, NA))
 #' Groups <- c("Group1", "Group2")
 #' RefGroup <- "Group2"
-#' dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList,
+#' dmacs_summary(LambdaList, NuList, MeanList, VarList, SDList,
 #'               Groups, RefGroup)
 #'
 #' @section References:
@@ -76,9 +81,10 @@
 
 
 
-dmacs_summary <- function (LambdaList, ThreshList,
+dmacs_summary <- function (LambdaList, NuList,
                            MeanList, VarList, SDList,
                            Groups = NULL, RefGroup = 1,
+                           ThreshList = NULL, ThetaList = NULL,
                            categorical = FALSE, ...) {
 
   ## See if we need to get group names, and if we do, try to grab them from the names of LambdaList. Otherwise, just number the groups
@@ -95,28 +101,66 @@ dmacs_summary <- function (LambdaList, ThreshList,
     RefGroup <- match(RefGroup, Groups)
   }
 
-  ## if only two groups, then call DIF effect summary single right away, else iterate over the focal groups
-  if (length(Groups) == 2) {
-    dmacs_summary_single(LambdaF = LambdaList[-RefGroup][[1]],
-                              ThreshF = ThreshList[-RefGroup][[1]],
-                              MeanF   = MeanList[-RefGroup][[1]],
-                              VarF    = VarList[-RefGroup][[1]],
-                              SD      = SDList[-RefGroup][[1]],
-                              LambdaR = LambdaList[[RefGroup]],
-                              ThreshR = ThreshList[[RefGroup]],
-                              categorical = categorical, ...)
-  } else {
-   mapply(dmacs_summary_single,
-                    LambdaF = LambdaList[-RefGroup],
-                    ThreshF = ThreshList[-RefGroup],
-                    MeanF   = MeanList[-RefGroup],
-                    VarF    = VarList[-RefGroup],
-                    SD      = SDList[-RefGroup],
-                    MoreArgs = list(LambdaR = LambdaList[[RefGroup]],
-                                    ThreshR = ThreshList[[RefGroup]],
-                                    categorical = categorical, ...),
-                    SIMPLIFY = FALSE)
+  # The categorical and continuous cases are different from each other
+  if (!is.null(ThreshR) | categorical) { # now we are categorical
+    ## if only two groups, then call DIF effect summary single right away, else iterate over the focal groups
+    if (length(Groups) == 2) {
+      dmacs_summary_single(LambdaF = LambdaList[-RefGroup][[1]],
+                           NuF     = NuList[-RefGroup][[1]],
+                           ThreshF = ThreshList[-RefGroup][[1]],
+                           ThetaF  = ThetaList[-RefGroup][[1]],
+                           MeanF   = MeanList[-RefGroup][[1]],
+                           VarF    = VarList[-RefGroup][[1]],
+                           SD      = SDList[-RefGroup][[1]],
+                           LambdaR = LambdaList[[RefGroup]],
+                           NuR     = NuList[[RefGroup]],
+                           ThreshR = ThreshList[[RefGroup]],
+                           ThetaR = ThetaList[[RefGroup]],
+                           categorical = categorical, ...)
+    } else {
+      mapply(dmacs_summary_single,
+             LambdaF = LambdaList[-RefGroup],
+             NuF     = NuList[-RefGroup],
+             ThreshF = ThreshList[-RefGroup],
+             ThetaF  = ThetaList[-RefGroup],
+             MeanF   = MeanList[-RefGroup],
+             VarF    = VarList[-RefGroup],
+             SD      = SDList[-RefGroup],
+             MoreArgs = list(LambdaR = LambdaList[[RefGroup]],
+                             NuR     = NuList[[RefGroup]],
+                             ThreshR = ThreshList[[RefGroup]],
+                             ThetaR  = ThetaList[[RefGroup]],
+                             categorical = categorical, ...),
+             SIMPLIFY = FALSE)
+    }
+  } else { # Continuous indicators
+    ## if only two groups, then call DIF effect summary single right away, else iterate over the focal groups
+    if (length(Groups) == 2) {
+      dmacs_summary_single(LambdaF = LambdaList[-RefGroup][[1]],
+                           NuF     = NuList[-RefGroup][[1]],
+                           MeanF   = MeanList[-RefGroup][[1]],
+                           VarF    = VarList[-RefGroup][[1]],
+                           SD      = SDList[-RefGroup][[1]],
+                           LambdaR = LambdaList[[RefGroup]],
+                           NuR     = NuList[[RefGroup]],
+                           categorical = categorical, ...)
+    } else {
+      mapply(dmacs_summary_single,
+             LambdaF = LambdaList[-RefGroup],
+             NuF     = NuList[-RefGroup],
+             MeanF   = MeanList[-RefGroup],
+             VarF    = VarList[-RefGroup],
+             SD      = SDList[-RefGroup],
+             MoreArgs = list(LambdaR = LambdaList[[RefGroup]],
+                             NuR     = NuList[[RefGroup]],
+                             categorical = categorical, ...),
+             SIMPLIFY = FALSE)
+    }
   }
+
+
+
+
 
 
 }
@@ -133,24 +177,30 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' \code{\link{mplus_dmacs}}, which are the only functions in this
 #' package intended for casual users
 #'
-#' @param LambdaR is the factor loading matrix (or dataframe) for the
-#' reference group.
-#' @param ThreshR is a vector of indicator intercepts (for continuous
-#' indicators) or a list, indexed by items, of vectors of thresholds (for
-#' categorical indicators) for the reference group. For categorical
-#' indicators, do \strong{not} provide a matrix of thresholds.
-#' @param LambdaF is the factor loading matrix (or dataframe) for the
-#' focal group.
-#' @param ThreshF is a  vector of indicator intercepts (for continuous
-#' indicators) or a list, indexed by items, of vectors of thresholds (for
-#' categorical indicators) for the focal group. For categorical indicators,
-#' do \strong{not} provide a matrix of thresholds.
-#' @param MeanF is a vector of factor means for the focal group
-#' @param VarF is a vector of factor variances for the focal group.
-#' @param SD is a vector of indicator observed standard deviations used as
+#' @param LambdaR is the factor loading of the indicator onto the factor of
+#' interest for the reference group.
+#' @param LambdaF is the factor loading of the indicator onto the factor of
+#' interest for the focal group.
+#' @param NuR is the indicator intercept for the reference group.
+#' @param NuF is the indicator intercept for the focal group.
+#' @param MeanF is the factor mean in the focal group
+#' @param VarF is the factor variances in the focal group.
+#' @param SD is the indicator standard deviations to be used as
 #' the denominator of the dmacs effect size. This will usually either be
-#' pooled standard deviations or the standard deviation of the reference
-#' group.
+#' pooled standard deviation for the indicator or the standard deviation
+#' for the indicator in the reference group.
+#' @param ThreshR is a vector of thresholds (for categorical indicators)
+#' for the reference group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThreshF is a vector of thresholds (for categorical indicators)
+#' for the focal group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThetaR is the indicator residual variance in the
+#' reference group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThetaF is the indicator residual variance in the
+#' focal group. Defaults to \code{NULL} for continuous
+#' indicators.
 #' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
@@ -174,12 +224,12 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' @examples
 #' LambdaF <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1)
 #' LambdaR <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1)
-#' ThreshF <- c(0.00, 1.28, -0.82, 0.44)
-#' ThreshR <- c(0.00, 0.65, -0.77, 0.47)
+#' NuF     <- c(0.00, 1.28, -0.82, 0.44)
+#' NuR     <- c(0.00, 0.65, -0.77, 0.47)
 #' MeanF   <- 0.21
 #' VarF    <- 1.76
 #' SD      <- c(2.12, 1.85,  1.12, 3.61)
-#' dmacs_summary_single(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD)
+#' dmacs_summary_single(LambdaR, LambdaF, NuR, NuF, MeanF, VarF, SD)
 #'
 #' @section References:
 #' Nye, C. & Drasgow, F. (2011). Effect size indices for analyses of
@@ -189,16 +239,131 @@ dmacs_summary <- function (LambdaList, ThreshList,
 #' @export
 
 
-dmacs_summary_single <- function (LambdaR, ThreshR,
-                                  LambdaF, ThreshF,
+dmacs_summary_single <- function (LambdaR, LambdaF,
+                                  NuR, NuF,
                                   MeanF, VarF, SD,
+                                  ThreshR = NULL, ThreshF = NULL,
+                                  ThetaR = NULL, ThetaF = NULL,
                                   categorical = FALSE, ...) {
 
-  ## if more than one threshold, we must be in a categorical situation
-  if (length(ThreshR[[1]]) > 1) { categorical <- TRUE }
+  ## Categorical and continuous work a bit differently from each other
+  if (!is.null(ThreshR) | categorical) { # Now we are categorical
+    categorical <- TRUE
+    if (!is.list(ThreshR)) stop("Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
 
-  ## IMPORTANT: if categorical, ThreshR really needs to be a list indexed by item
-  if (categorical && !is.list(ThreshR)) stop("Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
+    ## If unidimensional, then things are straightforward, otherwise not so much!!
+    if (ncol(LambdaR) == 1) {
+      DMACS <- mapply(item_dmacs, LambdaR, ThreshR,
+                      LambdaF, ThreshF,
+                      MeanF, VarF, SD, categorical, ...)
+      names(DMACS) <- rownames(LambdaR)
+
+      ItemDeltaMean <- mapply(delta_mean_item, LambdaR, ThreshR,
+                              LambdaF, ThreshF,
+                              MeanF, VarF, categorical, ...)
+      names(ItemDeltaMean) <- rownames(LambdaR)
+
+      MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
+      names(MeanDiff) <- colnames(LambdaR)
+
+      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
+
+    } else {
+
+      ## Need to give MeanF and VarF (which are vectors indexed by factor) the same structure as LambdaR (an array indexed by itemsxfactors)
+      MeanF <- as.vector(MeanF)
+      MeanF <- matrix(rep(MeanF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
+      VarF  <- as.vector(VarF)
+      VarF  <- matrix(rep(VarF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
+
+      DMACS <- as.data.frame(matrix(mapply(item_dmacs,
+                                           LambdaR, LambdaF,
+                                           NuR, NuF,
+                                           MeanF, VarF, SD,
+                                           ThreshR, ThreshF,
+                                           ThetaR, ThetaF,
+                                           categorical, ...),
+                                    nrow = nrow(LambdaR)))
+      colnames(DMACS) <- colnames(LambdaR)
+      rownames(DMACS) <- rownames(LambdaR)
+
+
+      ## ItemDeltaMean has the same possible issues as DMACS
+      ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
+                                                   LambdaR, LambdaF,
+                                                   NuR, NuF,
+                                                   MeanF, VarF, SD,
+                                                   ThreshR, ThreshF,
+                                                   ThetaR, ThetaF,
+                                                   categorical, ...),
+                                            nrow = nrow(LambdaR)))
+      colnames(ItemDeltaMean) <- colnames(LambdaR)
+      rownames(ItemDeltaMean) <- rownames(LambdaR)
+
+      MeanDiff <- colSums(ItemDeltaMean, na.rm = TRUE)
+
+      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
+
+
+    }
+
+  } else { # Now we are continuous
+    ## If unidimensional, then things are straightforward, otherwise not so much!!
+    if (ncol(LambdaR) == 1) {
+      DMACS <- mapply(item_dmacs, LambdaR, LambdaF,
+                                  NuR, NuF,
+                                  MeanF, VarF, SD, categorical = FALSE, ...)
+      names(DMACS) <- rownames(LambdaR)
+
+      ItemDeltaMean <- mapply(delta_mean_item, LambdaR, LambdaF,
+                                               NuR, NuF,
+                                               MeanF, VarF, SD, categorical = FALSE, ...)
+      names(ItemDeltaMean) <- rownames(LambdaR)
+
+      MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
+      names(MeanDiff) <- colnames(LambdaR)
+
+      VarDiff <- delta_var(LambdaR, LambdaF, VarF)
+      names(VarDiff) <- colnames(LambdaR)
+      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff, VarDiff = VarDiff)
+
+
+    } else {
+
+      ## Need to give MeanF and VarF (which are vectors indexed by factor) the same structure as LambdaR (an array indexed by itemsxfactors)
+      MeanF <- as.vector(MeanF)
+      MeanF <- matrix(rep(MeanF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
+      VarF  <- as.vector(VarF)
+      VarF  <- matrix(rep(VarF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
+
+      DMACS <- as.data.frame(matrix(mapply(item_dmacs,
+                                           LambdaR, LambdaF,
+                                           NuR, NuF,
+                                           MeanF, VarF, SD, categorical = FALSE, ...),
+                                    nrow = nrow(LambdaR)))
+      colnames(DMACS) <- colnames(LambdaR)
+      rownames(DMACS) <- rownames(LambdaR)
+
+
+      ## ItemDeltaMean has the same possible issues as DMACS
+      ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
+                                                   LambdaR, LambdaF,
+                                                   NuR, NuF,
+                                                   MeanF, VarF, SD, categorical = FALSE, ...),
+                                            nrow = nrow(LambdaR)))
+      colnames(ItemDeltaMean) <- colnames(LambdaR)
+      rownames(ItemDeltaMean) <- rownames(LambdaR)
+
+      MeanDiff <- colSums(ItemDeltaMean, na.rm = TRUE)
+
+      ## delta_var needs to be redesigned for multidimensional models, so let's leave it off for now
+      #VarDiff <- delta_var(LambdaR, LambdaF, VarF)
+
+
+      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)#, VarDiff = VarDiff)
+    }
+
+  }
 
   ## If unidimensional, then things are straightforward, otherwise not so much!!
   if (ncol(LambdaR) == 1) {
