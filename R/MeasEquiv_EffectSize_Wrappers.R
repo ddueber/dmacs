@@ -423,7 +423,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 
 
 lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MItype = "Group", ...) {
-  if (grepl("ong", MItype)) { # Long, Longitudinal, long, longitudinal
+  if (grepl("ong", MItype, fixed = TRUE)) { # Long, Longitudinal, long, longitudinal
     ## Groups are time-points. We ignore correlated residuals!
 
     # Make a vector of factor names
