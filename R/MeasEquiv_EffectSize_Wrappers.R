@@ -365,62 +365,6 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 
   }
 
-  ## If unidimensional, then things are straightforward, otherwise not so much!!
-  if (ncol(LambdaR) == 1) {
-    DMACS <- mapply(item_dmacs, LambdaR, ThreshR,
-             LambdaF, ThreshF,
-             MeanF, VarF, SD, categorical, ...)
-    names(DMACS) <- rownames(LambdaR)
-
-    ItemDeltaMean <- mapply(delta_mean_item, LambdaR, ThreshR,
-                                LambdaF, ThreshF,
-                                MeanF, VarF, categorical, ...)
-    names(ItemDeltaMean) <- rownames(LambdaR)
-
-    MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
-    names(MeanDiff) <- colnames(LambdaR)
-
-    ## VarDiff only works for linear indicators at the moment
-    if (!categorical) {
-      VarDiff <- delta_var(LambdaR, LambdaF, VarF)
-      names(VarDiff) <- colnames(LambdaR)
-      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff, VarDiff = VarDiff)
-    } else {
-      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
-    }
-
-  } else {
-
-    ## Need to give MeanF and VarF (which are vectors indexed by factor) the same structure as LambdaR (an array indexed by itemsxfactors)
-    MeanF <- as.vector(MeanF)
-    MeanF <- matrix(rep(MeanF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
-    VarF  <- as.vector(VarF)
-    VarF  <- matrix(rep(VarF, nrow(LambdaR)), nrow = nrow(LambdaR), byrow = TRUE)
-
-    DMACS <- as.data.frame(matrix(mapply(item_dmacs, LambdaR, ThreshR,
-                      LambdaF, ThreshF,
-                      MeanF, VarF, SD, categorical, ...), nrow = nrow(LambdaR)))
-    colnames(DMACS) <- colnames(LambdaR)
-    rownames(DMACS) <- rownames(LambdaR)
-
-
-    ## ItemDeltaMean has the same possible issues as DMACS
-    ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item, LambdaR, ThreshR,
-                              LambdaF, ThreshF,
-                              MeanF, VarF, categorical, ...), nrow = nrow(LambdaR)))
-    colnames(ItemDeltaMean) <- colnames(LambdaR)
-    rownames(ItemDeltaMean) <- rownames(LambdaR)
-
-    MeanDiff <- colSums(ItemDeltaMean, na.rm = TRUE)
-
-    ## delta_var needs to be redesigned for multidimensional models, so let's leave it off for now
-    #VarDiff <- delta_var(LambdaR, LambdaF, VarF)
-
-
-    list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)#, VarDiff = VarDiff)
-
-
-  }
 }
 
 
@@ -438,16 +382,16 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 #' often ordered by their appearance in the data, not alphabetically. When
 #' \code{long = TRUE}, RefGroup is either the index of the reference timepoint
 #' or the name of the latent factor at the reference timepoint.
-#' @param dtype described the pooling of standard deviations for use in the
+#' @param dtype describes the pooling of standard deviations for use in the
 #' denominator of the dmacs effect size. Possibilities are "pooled" for
 #' pooled standard deviations, or "glass" for always using the standard
 #' deviation of the reference group.
-#' @param long is a Boolean variable indicating whether measurement
-#' equivalence is being tested longitudinally. Defaults to \code{FALSE},
-#' which corresponds to multi-group measurement equivalence testing.
-#'  Only unidimensional models are supported with longitudinal data.
-#'  Note that output will always use indicator names from the reference
-#'  timepoint.
+#' @param MEtype described the type of measurement equivalence testing
+#' being performed. Defaults to "Group" for multigroup testing. Other
+#' option is "Longitudinal" (or "Long") for longitudinal testing.
+#' Only unidimensional models are supported with longitudinal data.
+#' Note that output will always use indicator names from the reference
+#' timepoint.
 #' @param ... other parameters to be used in functions that
 #' \code{lavaan_dmacs} calls, most likely \code{stepsize} for the
 #' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
@@ -478,8 +422,8 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 #' @export
 
 
-lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...) {
-  if (long) {
+lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MItype = "Group", ...) {
+  if (grepl("ong", MItype)) { # Long, Longitudinal, long, longitudinal
     ## Groups are time-points. We ignore correlated residuals!
 
     # Make a vector of factor names
@@ -492,16 +436,23 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...
     FitEst  <- lavaan::lavInspect(fit, "est")
     FitData <- lavaan::lavInspect(fit, "data")
 
-    ## factor loadings, factor means, and factor variances are easy
+    ## factor loadings, item intercepts, factor means, and factor variances are easy
     LambdaList <- lapply(Groups, function(x) {
       Lambdas <- FitEst$lambda[FitEst$lambda[,x] != 0, x]
       matrix(Lambdas, ncol = 1, dimnames = list(names(Lambdas)))
     })
     names(LambdaList) <- Groups
+
+    NuList <- lapply(1:length(Groups), function (x) {
+      FitEst$nu[rownames(LambdaList[[x]]),]
+    })
+    names(NuList) <- Groups
+
     MeanList   <- lapply(Groups, function(x) {
       FitEst$alpha[x,1]
     })
     names(MeanList) <- Groups
+
     VarList    <- lapply(Groups, function(x) {
       FitEst$psi[x,x]
     })
@@ -524,14 +475,13 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...
       stop("Only \"pooled\" and \"glass\" SD types are supported")
     }
 
-    ## Check to see if we are using categorical or linear variables, because Thresh works differently in those cases
+    ## Check to see if we are using categorical or linear variables, because Thresh and Theta only apply to categorical
     if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
-      ThreshList <- lapply(1:length(Groups), function (x) {
-        FitEst$nu[rownames(LambdaList[[x]]),1]
-      })
       categorical  <- FALSE
     } else {
-      ## Make a list indexed by group
+      categorical  <- TRUE
+
+      ## Make a list of thresholds indexed by group
       ThreshList <- lapply(1:length(Groups), function (x) {
         # Fetch indicator names so we can grepl them
         ItemNames <- rownames(LambdaList[[x]])
@@ -543,7 +493,11 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...
         })
       })
 
-      categorical  <- TRUE
+      ## make a list of residual variances indexed by group
+      ThetaList <- lapply(1:length(Groups), function (x) {
+        diag(FitEst$theta)[rownames(LambdaList[[x]])]
+      })
+
     }
 
   } else {
@@ -558,10 +512,12 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...
       warning(paste("It is recommended that you provide the name of the reference group as a string; see ?lavaan_dmacs. The reference group being used is", Groups[RefGroup]))
     }
 
-    ## factor loadings, factor means, and factor variances are easy
+    ## factor loadings, item intercepts, factor means, and factor variances are easy
     LambdaList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$lambda})
+    NuList     <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$nu})
     MeanList   <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$alpha})
     VarList    <- lapply(lavaan::lavInspect(fit, "est"), function(x) {diag(x$psi)})
+
 
     ## compute the sds for use in Equation 3 of Nye and Drasgow (2011)
     if (dtype == "pooled") {
@@ -583,9 +539,10 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...
 
     ## Check to see if we are using categorical or linear variables, because Thresh works differently in those cases
     if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
-      ThreshList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {x$nu})
       categorical  <- FALSE
     } else {
+      categorical  <- TRUE
+
       ## Need the item names so we can grepl them
       ItemNames <- rownames(lavaan::lavInspect(fit, "est")[[1]]$lambda)
 
@@ -598,15 +555,27 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", long = FALSE, ...
                x$tau)
       })
 
-      categorical  <- TRUE
+      # Now we need to get the thetas, too!!
+      ThetaList <- lapply(lavaan::lavInspect(fit, "est"), function(x) {diag(x$theta)})
     }
   }
 
+  # Call to dmacs_summary is different for categorical and continuous variables
+  if (categorical) {
 
-  Results <- dmacs_summary(LambdaList, ThreshList,
-                           MeanList, VarList, SDList,
-                           Groups, RefGroup,
-                           categorical, ...)
+    Results <- dmacs_summary(LambdaList, NuList,
+                             MeanList, VarList, SDList,
+                             Groups, RefGroup,
+                             ThreshList, ThetaList,
+                             categorical, ...)
+  } else {
+
+    Results <- dmacs_summary(LambdaList, NuList,
+                             MeanList, VarList, SDList,
+                             Groups, RefGroup,
+                             categorical, ...)
+  }
+
 
   ## Note to self - we may need to insert some names here!!
 
