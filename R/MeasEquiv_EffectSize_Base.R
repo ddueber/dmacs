@@ -23,18 +23,29 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' \code{\link{mplus_dmacs}}, which are the only functions in this
 #' package intended for casual users
 #'
-#' @param LambdaR is the factor loading of the item onto the factor of
+#' @param LambdaR is the factor loading of the indicator onto the factor of
 #' interest for the reference group.
-#' @param ThreshR is the indicator intercept (for continuous
-#' indicators) or a vector of thresholds (for
-#' categorical indicators) for the reference group.
-#' @param LambdaF is the factor loading of the item onto the factor of
+#' @param LambdaF is the factor loading of the indicator onto the factor of
 #' interest for the focal group.
-#' @param ThreshF is the indicator intercept (for continuous
-#' indicators) or a vector of thresholds (for
-#' categorical indicators) for the focal group.
+#' @param NuR is the indicator intercept for the reference group.
+#' @param NuF is the indicator intercept for the focal group.
 #' @param MeanF is the factor mean in the focal group
 #' @param VarF is the factor variances in the focal group.
+#' @param ThreshR is a vector of thresholds (for categorical indicators)
+#' for the reference group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThreshR is a vector of thresholds (for categorical indicators)
+#' for the reference group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThreshF is a vector of thresholds (for categorical indicators)
+#' for the focal group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThetaR is the indicator residual variance in the
+#' reference group. Defaults to \code{NULL} for continuous
+#' indicators.
+#' @param ThetaF is the indicator residual variance in the
+#' focal group. Defaults to \code{NULL} for continuous
+#' indicators.
 #' @param SD is the indicator standard deviations to be used as
 #' the denominator of the dmacs effect size. This will usually either be
 #' pooled standard deviation for the indicator or the standard deviation
@@ -54,8 +65,8 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' @examples
 #' LambdaF <- 0.74
 #' LambdaR <- 0.76
-#' ThreshF <- 1.28
-#' ThreshR <- 0.65
+#' NuF     <- 1.28
+#' NuR     <- 0.65
 #' MeanF   <- 0.21
 #' VarF    <- 1.76
 #' SD      <- 1.85
@@ -71,34 +82,46 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' @importFrom stats dnorm
 #' @importFrom stats integrate
 
-item_dmacs <- function (LambdaR, ThreshR,
-                        LambdaF, ThreshF,
+item_dmacs <- function (LambdaR, LambdaF,
+                        NuR, NuF,
                         MeanF, VarF,
-                        SD, categorical = FALSE) {
+                        SD,
+                        ThreshR = NULL, ThreshF = NULL,
+                        ThetaR = NULL, ThetaF = NULL,
+                        categorical = FALSE) {
 
-  ## If threshold vectors do not have the same length, throw an error
-  if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
+  # Use Thresholds as a check for categorical-ness
+  if (!is.null(ThreshR)) {
+    categorical <- TRUE
+    ## If threshold vectors do not have the same length, throw an error
+    if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
+
+  }
 
   ## If item does not load on factor, return NA
-  if (LambdaR == 0) {return(NA)}
-
-  ## if more than one threshold, we must be in a categorical situation
-  if (length(ThreshR) > 1) { categorical <- TRUE}
+  if(LambdaR == 0) {return(NA)}
 
   ## Create a function for the integrand using the expected value function expected_value
   ## The sqrt(VarF) is there because we did a change of varianbles into the z metric
-  integrand <- function (z, LambdaF, LambdaR, ThreshF, ThreshR, MeanF, VarF, categorical) {
 
-    (expected_value(LambdaF, ThreshF, MeanF+z*sqrt(VarF), categorical) -
-       expected_value(LambdaR, ThreshR, MeanF+z*sqrt(VarF), categorical))^2 * dnorm(z) * sqrt(VarF)
+  integrand <- function(z, LambdaR, LambdaF,
+                        NuR, NuF,
+                        ThreshR, ThreshF,
+                        ThetaR, ThetaF,
+                        MeanF, VarF, categorical) {
+
+    (expected_value(LambdaF, NuF, MeanF+z*sqrt(VarF), ThreshF, ThetaF, categorical) -
+       expected_value(LambdaR, NuR, MeanF+z*sqrt(VarF), ThreshR, ThetaR, categorical))^2 * dnorm(z) * sqrt(VarF)
 
   }
 
   ## Now, sum it to get the integral, and compute the effect size. Stepsize is in z units, not theta units!!
   sqrt(integrate(integrand, -Inf, Inf,
-                 LambdaF = LambdaF, LambdaR = LambdaR,
-                 ThreshF = ThreshF, ThreshR = ThreshR,
-                 MeanF = MeanF, VarF = VarF,
+                 LambdaR, LambdaF,
+                 NuR, NuF,
+                 ThreshR, ThreshF,
+                 ThetaR, ThetaF,
+                 MeanF, VarF,
                  categorical = categorical)$value)/SD
 
 }
@@ -177,7 +200,7 @@ delta_mean_item <- function (LambdaR, LambdaF,
                              ThetaR = NULL, ThetaF = NULL,
                              categorical = FALSE) {
   # Use Thresholds as a check for categorical-ness
-  if (length(ThreshR) > 1) {
+  if (!is.null(ThreshR)) {
     categorical <- TRUE
     ## If threshold vectors do not have the same length, throw an error
     if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
@@ -202,9 +225,11 @@ delta_mean_item <- function (LambdaR, LambdaF,
   }
   ## Now, integrate
   integrate(integrand, -Inf, Inf,
-            LambdaR = LambdaR, LambdaF = LambdaF,
-            ThreshR = ThreshR, ThreshF = ThreshF,
-            MeanF = MeanF, VarF = VarF,
+            LambdaR, LambdaF,
+            NuR, NuF,
+            ThreshR, ThreshF,
+            ThetaR, ThetaF,
+            MeanF, VarF,
             categorical = categorical)$value
 
 }
