@@ -31,9 +31,10 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' @param NuF is the indicator intercept for the focal group.
 #' @param MeanF is the factor mean in the focal group
 #' @param VarF is the factor variances in the focal group.
-#' @param ThreshR is a vector of thresholds (for categorical indicators)
-#' for the reference group. Defaults to \code{NULL} for continuous
-#' indicators.
+#' @param SD is the indicator standard deviations to be used as
+#' the denominator of the dmacs effect size. This will usually either be
+#' pooled standard deviation for the indicator or the standard deviation
+#' for the indicator in the reference group.
 #' @param ThreshR is a vector of thresholds (for categorical indicators)
 #' for the reference group. Defaults to \code{NULL} for continuous
 #' indicators.
@@ -46,10 +47,6 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' @param ThetaF is the indicator residual variance in the
 #' focal group. Defaults to \code{NULL} for continuous
 #' indicators.
-#' @param SD is the indicator standard deviations to be used as
-#' the denominator of the dmacs effect size. This will usually either be
-#' pooled standard deviation for the indicator or the standard deviation
-#' for the indicator in the reference group.
 #' @param categorical is a Boolean variable declaring whether the variables
 #' in the model are ordered categorical. Models in which some variables are
 #' categorical and others are continuous are not supported. If no value is
@@ -84,8 +81,7 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 
 item_dmacs <- function (LambdaR, LambdaF,
                         NuR, NuF,
-                        MeanF, VarF,
-                        SD,
+                        MeanF, VarF, SD,
                         ThreshR = NULL, ThreshF = NULL,
                         ThetaR = NULL, ThetaF = NULL,
                         categorical = FALSE) {
@@ -321,15 +317,21 @@ expected_value <- function (Lambda, Nu, Eta, Thresh = NULL, Theta = NULL, catego
 
   if (categorical) {
     ## Graded Response model with probit link.
+
+    ## Let's give ourselves a y* score
+    Mu <- Nu + Lambda*Eta
+
     ## categories go from 0 to number of thresholds
     max <- length(Thresh)
-    ## let's be lazy and make a max+1 category that is impossible to attain
+    ## Make a max+1 category that is impossible to attain
     Thresh[max+1] <- Inf
 
-    ## I know for loops are bad, but using both current and next element of vector in sapply is hard for me!
+    ## Start expected value at 0 and incremented with expectation value from each category
     expected <- 0
-    for (i in 1:max) {expected <- expected + i*(pnorm(Thresh[i+1]-Nu-Lambda*Eta, sd = sqrt(Theta)) -
-                                                  pnorm(Thresh[i]-Nu-Lambda*Eta, sd = sqrt(Theta)))}
+    for (i in 1:max) {
+      expected <- expected + i*(pnorm(Mu - Thresh[i], sd = sqrt(Theta)) -
+                                                  pnorm(Mu - Thresh[i+1], sd = sqrt(Theta)))
+    }
     expected
 
   } else {
