@@ -102,7 +102,7 @@ dmacs_summary <- function (LambdaList, NuList,
   }
 
   # The categorical and continuous cases are different from each other
-  if (!is.null(ThreshR) | categorical) { # now we are categorical
+  if ( categorical) { # now we are categorical
     ## if only two groups, then call DIF effect summary single right away, else iterate over the focal groups
     if (length(Groups) == 2) {
       dmacs_summary_single(LambdaF = LambdaList[-RefGroup][[1]],
@@ -115,7 +115,7 @@ dmacs_summary <- function (LambdaList, NuList,
                            LambdaR = LambdaList[[RefGroup]],
                            NuR     = NuList[[RefGroup]],
                            ThreshR = ThreshList[[RefGroup]],
-                           ThetaR = ThetaList[[RefGroup]],
+                           ThetaR  = ThetaList[[RefGroup]],
                            categorical = categorical, ...)
     } else {
       mapply(dmacs_summary_single,
@@ -247,7 +247,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
                                   categorical = FALSE, ...) {
 
   ## Categorical and continuous work a bit differently from each other
-  if (!is.null(ThreshR) | categorical) { # Now we are categorical
+  if ( categorical) { # Now we are categorical
     categorical <- TRUE
     if (!is.list(ThreshR)) stop("Thresholds must be in a list indexed by item. The thresholds for each item should be a vector")
 

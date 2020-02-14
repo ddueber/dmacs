@@ -196,7 +196,7 @@ delta_mean_item <- function (LambdaR, LambdaF,
                              ThetaR = NULL, ThetaF = NULL,
                              categorical = FALSE) {
   # Use Thresholds as a check for categorical-ness
-  if (!is.null(ThreshR)) {
+  if (categorical) {
     categorical <- TRUE
     ## If threshold vectors do not have the same length, throw an error
     if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
@@ -311,9 +311,6 @@ delta_var <- function (LambdaR, LambdaF, VarF, categorical = FALSE) {
 #' @importFrom stats pnorm
 
 expected_value <- function (Lambda, Nu, Eta, Thresh = NULL, Theta = NULL, categorical = FALSE) {
-
-  ## if Thresholds are provided, we must be in a categorical situation
-  if (!is.null(Thresh)) { categorical <- TRUE }
 
   if (categorical) {
     ## Graded Response model with probit link.
