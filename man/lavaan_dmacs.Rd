@@ -4,7 +4,8 @@
 \alias{lavaan_dmacs}
 \title{Summary of measurement nonequivalence effects}
 \usage{
-lavaan_dmacs(fit, RefGroup = 1, dtype = "pooled", ...)
+lavaan_dmacs(fit, RefGroup = 1, dtype = "pooled", MItype = "Group",
+  ...)
 }
 \arguments{
 \item{fit}{is a fitted lavaan multi-group object. Only CFA models are
@@ -14,9 +15,11 @@ supported, and be sure to have an anchor item.}
 or the index of the reference group (as a number). RefGroup defaults to
 the first group if no value is provided. It is strongly recommended to
 provide the reference group as a string, since group names in data are
-often ordered by their appearance in the data, not alphabetically.}
+often ordered by their appearance in the data, not alphabetically. When
+\code{long = TRUE}, RefGroup is either the index of the reference timepoint
+or the name of the latent factor at the reference timepoint.}
 
-\item{dtype}{described the pooling of standard deviations for use in the
+\item{dtype}{describes the pooling of standard deviations for use in the
 denominator of the dmacs effect size. Possibilities are "pooled" for
 pooled standard deviations, or "glass" for always using the standard
 deviation of the reference group.}
@@ -24,9 +27,16 @@ deviation of the reference group.}
 \item{...}{other parameters to be used in functions that
 \code{lavaan_dmacs} calls, most likely \code{stepsize} for the
 \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.}
+
+\item{MEtype}{described the type of measurement equivalence testing
+being performed. Defaults to "Group" for multigroup testing. Other
+option is "Longitudinal" (or "Long") for longitudinal testing.
+Only unidimensional models are supported with longitudinal data.
+Note that output will always use indicator names from the reference
+timepoint.}
 }
 \value{
-A list, indexed by group, of lists of measurement nonequivalence
+A list, indexed by group or timepoint, of lists of measurement nonequivalence
 effects from Nye and Drasgow (2011), including dmacs, expected bias in
 the mean score by item,
 expected bias in the mean total score, and expected bias in the variance

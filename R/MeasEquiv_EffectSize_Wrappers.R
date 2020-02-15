@@ -116,7 +116,7 @@ dmacs_summary <- function (LambdaList, NuList,
                            NuR     = NuList[[RefGroup]],
                            ThreshR = ThreshList[[RefGroup]],
                            ThetaR  = ThetaList[[RefGroup]],
-                           categorical = categorical, ...)
+                           categorical = categorical)
     } else {
       mapply(dmacs_summary_single,
              LambdaF = LambdaList[-RefGroup],
@@ -130,7 +130,7 @@ dmacs_summary <- function (LambdaList, NuList,
                              NuR     = NuList[[RefGroup]],
                              ThreshR = ThreshList[[RefGroup]],
                              ThetaR  = ThetaList[[RefGroup]],
-                             categorical = categorical, ...),
+                             categorical = categorical),
              SIMPLIFY = FALSE)
     }
   } else { # Continuous indicators
@@ -253,14 +253,22 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 
     ## If unidimensional, then things are straightforward, otherwise not so much!!
     if (ncol(LambdaR) == 1) {
-      DMACS <- mapply(item_dmacs, LambdaR, ThreshR,
-                      LambdaF, ThreshF,
-                      MeanF, VarF, SD, categorical, ...)
+      DMACS <- mapply(item_dmacs,
+                      LambdaR, LambdaF,
+                      NuR, NuF,
+                      MeanF, VarF, SD,
+                      ThreshR, ThreshF,
+                      ThetaR, ThetaF,
+                      categorical)
       names(DMACS) <- rownames(LambdaR)
 
-      ItemDeltaMean <- mapply(delta_mean_item, LambdaR, ThreshR,
-                              LambdaF, ThreshF,
-                              MeanF, VarF, categorical, ...)
+      ItemDeltaMean <- mapply(delta_mean_item,
+                              LambdaR, LambdaF,
+                              NuR, NuF,
+                              MeanF, VarF,
+                              ThreshR, ThreshF,
+                              ThetaR, ThetaF,
+                              categorical)
       names(ItemDeltaMean) <- rownames(LambdaR)
 
       MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
@@ -282,7 +290,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
                                            MeanF, VarF, SD,
                                            ThreshR, ThreshF,
                                            ThetaR, ThetaF,
-                                           categorical, ...),
+                                           categorical),
                                     nrow = nrow(LambdaR)))
       colnames(DMACS) <- colnames(LambdaR)
       rownames(DMACS) <- rownames(LambdaR)
@@ -292,10 +300,10 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
                                                    LambdaR, LambdaF,
                                                    NuR, NuF,
-                                                   MeanF, VarF, SD,
+                                                   MeanF, VarF,
                                                    ThreshR, ThreshF,
                                                    ThetaR, ThetaF,
-                                                   categorical, ...),
+                                                   categorical),
                                             nrow = nrow(LambdaR)))
       colnames(ItemDeltaMean) <- colnames(LambdaR)
       rownames(ItemDeltaMean) <- rownames(LambdaR)
@@ -317,7 +325,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 
       ItemDeltaMean <- mapply(delta_mean_item, LambdaR, LambdaF,
                                                NuR, NuF,
-                                               MeanF, VarF, SD, categorical = FALSE, ...)
+                                               MeanF, VarF, categorical = FALSE, ...)
       names(ItemDeltaMean) <- rownames(LambdaR)
 
       MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
@@ -349,7 +357,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
                                                    LambdaR, LambdaF,
                                                    NuR, NuF,
-                                                   MeanF, VarF, SD, categorical = FALSE, ...),
+                                                   MeanF, VarF, categorical = FALSE, ...),
                                             nrow = nrow(LambdaR)))
       colnames(ItemDeltaMean) <- colnames(LambdaR)
       rownames(ItemDeltaMean) <- rownames(LambdaR)
@@ -422,8 +430,8 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 #' @export
 
 
-lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MItype = "Group", ...) {
-  if (grepl("ong", MItype, fixed = TRUE)) { # Long, Longitudinal, long, longitudinal
+lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group", ...) {
+  if (grepl("ong", MEtype, fixed = TRUE)) { # Long, Longitudinal, long, longitudinal
     ## Groups are time-points. We ignore correlated residuals!
 
     # Make a vector of factor names

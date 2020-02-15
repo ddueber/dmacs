@@ -4,29 +4,30 @@
 \alias{expected_value}
 \title{Expected value of an indicator}
 \usage{
-expected_value(Lambda, Thresh, Theta, categorical = FALSE)
+expected_value(Lambda, Nu, Eta, Thresh = NULL, Theta = NULL,
+  categorical = FALSE)
 }
 \arguments{
 \item{Lambda}{is the loading of the indicator on the factor.}
 
-\item{Thresh}{is the intercept (continuous indicator) or vector of
-thresholds (categorical indicator) for the indicator.}
+\item{Nu}{is the indicator intercept.}
 
-\item{Theta}{is the value of the factor for which the expected value is
+\item{Eta}{is the value of the factor for which the expected value is
 to be computed}
+
+\item{Thresh}{is the vector of thresholds for a categorical indicator.
+Defaults to NULL as \code{Thresh} is not needed for continuous indicators.}
 
 \item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
 categorical and others are continuous are not supported. If no value is
-provided, categorical defaults to \code{FALSE}, although if multiple
-thresholds are provided for an item, categorical will be forced to
-\code{TRUE}. A graded response model with probit link (e.g., DWLS in
-lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
-for other categorical models (e.g., IRT parameterization) to be supported,
-e-mail the maintainer.}
+provided, categorical defaults to \code{FALSE}. A graded response model
+with probit link (e.g., DWLS in lavaan or WLSMV in Mplus) is used for
+categorical variables. If you desire for other categorical models
+(e.g., IRT parameterization) to be supported, e-mail the maintainer.}
 }
 \value{
-The expected value of the indicator when the factor score is \code{Theta}
+The expected value of the indicator when the factor score is \code{Eta}
 }
 \description{
 \code{expected_value} returns the expected value of an indicator given

@@ -4,34 +4,45 @@
 \alias{dmacs_summary_single}
 \title{Summary of measurement nonequivalence effects for a single group}
 \usage{
-dmacs_summary_single(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD,
+dmacs_summary_single(LambdaR, LambdaF, NuR, NuF, MeanF, VarF, SD,
+  ThreshR = NULL, ThreshF = NULL, ThetaR = NULL, ThetaF = NULL,
   categorical = FALSE, ...)
 }
 \arguments{
-\item{LambdaR}{is the factor loading matrix (or dataframe) for the
-reference group.}
+\item{LambdaR}{is the factor loading of the indicator onto the factor of
+interest for the reference group.}
 
-\item{ThreshR}{is a vector of indicator intercepts (for continuous
-indicators) or a list, indexed by items, of vectors of thresholds (for
-categorical indicators) for the reference group. For categorical
-indicators, do \strong{not} provide a matrix of thresholds.}
+\item{LambdaF}{is the factor loading of the indicator onto the factor of
+interest for the focal group.}
 
-\item{LambdaF}{is the factor loading matrix (or dataframe) for the
-focal group.}
+\item{NuR}{is the indicator intercept for the reference group.}
 
-\item{ThreshF}{is a  vector of indicator intercepts (for continuous
-indicators) or a list, indexed by items, of vectors of thresholds (for
-categorical indicators) for the focal group. For categorical indicators,
-do \strong{not} provide a matrix of thresholds.}
+\item{NuF}{is the indicator intercept for the focal group.}
 
-\item{MeanF}{is a vector of factor means for the focal group}
+\item{MeanF}{is the factor mean in the focal group}
 
-\item{VarF}{is a vector of factor variances for the focal group.}
+\item{VarF}{is the factor variances in the focal group.}
 
-\item{SD}{is a vector of indicator observed standard deviations used as
+\item{SD}{is the indicator standard deviations to be used as
 the denominator of the dmacs effect size. This will usually either be
-pooled standard deviations or the standard deviation of the reference
-group.}
+pooled standard deviation for the indicator or the standard deviation
+for the indicator in the reference group.}
+
+\item{ThreshR}{is a vector of thresholds (for categorical indicators)
+for the reference group. Defaults to \code{NULL} for continuous
+indicators.}
+
+\item{ThreshF}{is a vector of thresholds (for categorical indicators)
+for the focal group. Defaults to \code{NULL} for continuous
+indicators.}
+
+\item{ThetaR}{is the indicator residual variance in the
+reference group. Defaults to \code{NULL} for continuous
+indicators.}
+
+\item{ThetaF}{is the indicator residual variance in the
+focal group. Defaults to \code{NULL} for continuous
+indicators.}
 
 \item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
@@ -76,11 +87,11 @@ differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 \examples{
 LambdaF <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1)
 LambdaR <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1)
-ThreshF <- c(0.00, 1.28, -0.82, 0.44)
-ThreshR <- c(0.00, 0.65, -0.77, 0.47)
+NuF     <- c(0.00, 1.28, -0.82, 0.44)
+NuR     <- c(0.00, 0.65, -0.77, 0.47)
 MeanF   <- 0.21
 VarF    <- 1.76
 SD      <- c(2.12, 1.85,  1.12, 3.61)
-dmacs_summary_single(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD)
+dmacs_summary_single(LambdaR, LambdaF, NuR, NuF, MeanF, VarF, SD)
 
 }

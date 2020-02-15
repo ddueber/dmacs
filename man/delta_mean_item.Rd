@@ -4,27 +4,40 @@
 \alias{delta_mean_item}
 \title{Expected bias to item mean}
 \usage{
-delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF,
+delta_mean_item(LambdaR, LambdaF, NuR, NuF, MeanF, VarF, ThreshR = NULL,
+  ThreshF = NULL, ThetaR = NULL, ThetaF = NULL,
   categorical = FALSE)
 }
 \arguments{
-\item{LambdaR}{is the factor loading of the item onto the factor of
+\item{LambdaR}{is the factor loading of the indicator onto the factor of
 interest for the reference group.}
 
-\item{ThreshR}{is the indicator intercept (for continuous
-indicators) or a vector of thresholds (for
-categorical indicators) for the reference group.}
-
-\item{LambdaF}{is the factor loading of the item onto the factor of
+\item{LambdaF}{is the factor loading of the indicator onto the factor of
 interest for the focal group.}
 
-\item{ThreshF}{is the indicator intercept (for continuous
-indicators) or a vector of thresholds (for
-categorical indicators) for the focal group.}
+\item{NuR}{is the indicator intercept for the reference group.}
+
+\item{NuF}{is the indicator intercept for the focal group.}
 
 \item{MeanF}{is the factor mean in the focal group}
 
 \item{VarF}{is the factor variances in the focal group.}
+
+\item{ThreshR}{is a vector of thresholds (for categorical indicators)
+for the reference group. Defaults to \code{NULL} for continuous
+indicators.}
+
+\item{ThreshF}{is a vector of thresholds (for categorical indicators)
+for the focal group. Defaults to \code{NULL} for continuous
+indicators.}
+
+\item{ThetaR}{is the indicator residual variance in the
+reference group. Defaults to \code{NULL} for continuous
+indicators.}
+
+\item{ThetaF}{is the indicator residual variance in the
+focal group. Defaults to \code{NULL} for continuous
+indicators.}
 
 \item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
@@ -35,6 +48,10 @@ thresholds are provided, categorical will be forced to
 lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 for other categorical models (e.g., IRT parameterization) to be supported,
 e-mail the maintainer.}
+
+\item{ThreshR}{is a vector of thresholds (for categorical indicators)
+for the reference group. Defaults to \code{NULL} for continuous
+indicators.}
 }
 \value{
 The expected bias in item mean due to
@@ -61,10 +78,10 @@ differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 \examples{
 LambdaF <- 0.74
 LambdaR <- 0.76
-ThreshF <- 1.28
-ThreshR <- 0.65
+NuF     <- 1.28
+NuR     <- 0.65
 MeanF   <- 0.21
 VarF    <- 1.76
-delta_mean_item(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF)
+delta_mean_item(LambdaR, LambdaF, NuR, NuF, MeanF, VarF)
 
 }

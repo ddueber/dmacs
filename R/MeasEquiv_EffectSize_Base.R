@@ -67,7 +67,7 @@ colSD <- function(x, ...) {apply(X=x, MARGIN=2, FUN=sd, ...)}
 #' MeanF   <- 0.21
 #' VarF    <- 1.76
 #' SD      <- 1.85
-#' item_dmacs(LambdaR, ThreshR, LambdaF, ThreshF, MeanF, VarF, SD)
+#' item_dmacs(LambdaR, LambdaF, NuR, NuF, MeanF, VarF, SD)
 #'
 #' @section References:
 #' Nye, C. & Drasgow, F. (2011). Effect size indices for analyses of
@@ -142,9 +142,6 @@ item_dmacs <- function (LambdaR, LambdaF,
 #' @param NuF is the indicator intercept for the focal group.
 #' @param MeanF is the factor mean in the focal group
 #' @param VarF is the factor variances in the focal group.
-#' @param ThreshR is a vector of thresholds (for categorical indicators)
-#' for the reference group. Defaults to \code{NULL} for continuous
-#' indicators.
 #' @param ThreshR is a vector of thresholds (for categorical indicators)
 #' for the reference group. Defaults to \code{NULL} for continuous
 #' indicators.

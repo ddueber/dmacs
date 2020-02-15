@@ -4,17 +4,16 @@
 \alias{dmacs_summary}
 \title{Summary of measurement nonequivalence effects}
 \usage{
-dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList,
-  Groups = NULL, RefGroup = 1, categorical = FALSE, ...)
+dmacs_summary(LambdaList, NuList, MeanList, VarList, SDList,
+  Groups = NULL, RefGroup = 1, ThreshList = NULL, ThetaList = NULL,
+  categorical = FALSE, ...)
 }
 \arguments{
 \item{LambdaList}{is a list, indexed by groups, of factor loading
 matrices (dataframes are allowed).}
 
-\item{ThreshList}{is a list, indexed by groups, of vectors of indicator
-intercepts (for continuous indicators) or lists, indexed by items, of
-vectors of thresholds (for categorical indicators). For categorical
-indicators, do \strong{not} provide a matrix of thresholds for each group.}
+\item{NuList}{is a list, indexed by groups, of vectors of indicator
+intercepts.}
 
 \item{MeanList}{is a list, indexed by groups, of vectors of factor means.
 For unidimensional models, this is simply a list of factor means.}
@@ -38,6 +37,15 @@ or the index of the reference group (as a number). RefGroup defaults to
 the first group if no value is provided. It is strongly recommended to
 provide the reference group as a string, since group names in data are
 often ordered by their appearance in the data, not alphabetically.}
+
+\item{ThreshList}{is a list, indexed by groups, of lists, indexed by items, of
+vectors of thresholds (for categorical indicators). For categorical
+indicators, do \strong{not} provide a matrix of thresholds for each group.
+Defaults to \code{NULL} for continuous indicators.}
+
+\item{ThetaList}{is a list, indexed by groups, of vectors of item residual
+variances for categorical items. Defaults to \code{NULL} for continuous
+indicators.}
 
 \item{categorical}{is a Boolean variable declaring whether the variables
 in the model are ordered categorical. Models in which some variables are
@@ -81,7 +89,7 @@ differences between groups. \emph{Journal of Applied Psychology, 96}(5),
 \examples{
 LambdaList <- list(Group1 <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1),
                    Group2 <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1))
-ThreshList <- list(Group1 <- c(0.00, 1.28, -0.82, 0.44),
+NuList     <- list(Group1 <- c(0.00, 1.28, -0.82, 0.44),
                    Group2 <- c(0.00, 0.65, -0.77, 0.47))
 MeanList   <- list(Group1 <- 0.21,
                    Group2 <- 0.19)
@@ -91,7 +99,7 @@ SDList     <- list(Group1 <- c(2.12, 1.85,  1.12, 3.61),
                    Group2 <- c(NA, NA, NA, NA))
 Groups <- c("Group1", "Group2")
 RefGroup <- "Group2"
-dmacs_summary(LambdaList, ThreshList, MeanList, VarList, SDList,
+dmacs_summary(LambdaList, NuList, MeanList, VarList, SDList,
               Groups, RefGroup)
 
 }
