@@ -45,9 +45,6 @@
 #' lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 #' for other categorical models (e.g., IRT parameterization) to be supported,
 #' e-mail the maintainer.
-#' @param ... other parameters to be used in functions that
-#' \code{dmacs_summary} calls, most likely \code{stepsize} for the
-#' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
 #'
 #' @return A list, indexed by groups, of lists of measurement nonequivalence
 #' effects  from Nye and Drasgow (2011), including dmacs, expected bias in the mean score by item,
@@ -85,7 +82,7 @@ dmacs_summary <- function (LambdaList, NuList,
                            MeanList, VarList, SDList,
                            Groups = NULL, RefGroup = 1,
                            ThreshList = NULL, ThetaList = NULL,
-                           categorical = FALSE, ...) {
+                           categorical = FALSE) {
 
   ## See if we need to get group names, and if we do, try to grab them from the names of LambdaList. Otherwise, just number the groups
   if (is.null(Groups)) {
@@ -143,7 +140,7 @@ dmacs_summary <- function (LambdaList, NuList,
                            SD      = SDList[-RefGroup][[1]],
                            LambdaR = LambdaList[[RefGroup]],
                            NuR     = NuList[[RefGroup]],
-                           categorical = categorical, ...)
+                           categorical = categorical)
     } else {
       mapply(dmacs_summary_single,
              LambdaF = LambdaList[-RefGroup],
@@ -153,7 +150,7 @@ dmacs_summary <- function (LambdaList, NuList,
              SD      = SDList[-RefGroup],
              MoreArgs = list(LambdaR = LambdaList[[RefGroup]],
                              NuR     = NuList[[RefGroup]],
-                             categorical = categorical, ...),
+                             categorical = categorical),
              SIMPLIFY = FALSE)
     }
   }
@@ -210,9 +207,6 @@ dmacs_summary <- function (LambdaList, NuList,
 #' lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 #' for other categorical models (e.g., IRT parameterization) to be supported,
 #' e-mail the maintainer.
-#' @param ... other parameters to be used in functions that
-#' \code{dmacs_summary_single} calls, most likely \code{stepsize} for the
-#' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
 #'
 #' @return A list of measurement nonequivalence effects from Nye and Drasgow
 #' (2011), including dmacs,
@@ -244,7 +238,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
                                   MeanF, VarF, SD,
                                   ThreshR = NULL, ThreshF = NULL,
                                   ThetaR = NULL, ThetaF = NULL,
-                                  categorical = FALSE, ...) {
+                                  categorical = FALSE) {
 
   ## Categorical and continuous work a bit differently from each other
   if ( categorical) { # Now we are categorical
@@ -320,12 +314,12 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
     if (ncol(LambdaR) == 1) {
       DMACS <- mapply(item_dmacs, LambdaR, LambdaF,
                                   NuR, NuF,
-                                  MeanF, VarF, SD, categorical = FALSE, ...)
+                                  MeanF, VarF, SD, categorical = FALSE)
       names(DMACS) <- rownames(LambdaR)
 
       ItemDeltaMean <- mapply(delta_mean_item, LambdaR, LambdaF,
                                                NuR, NuF,
-                                               MeanF, VarF, categorical = FALSE, ...)
+                                               MeanF, VarF, categorical = FALSE)
       names(ItemDeltaMean) <- rownames(LambdaR)
 
       MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
@@ -347,7 +341,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       DMACS <- as.data.frame(matrix(mapply(item_dmacs,
                                            LambdaR, LambdaF,
                                            NuR, NuF,
-                                           MeanF, VarF, SD, categorical = FALSE, ...),
+                                           MeanF, VarF, SD, categorical = FALSE),
                                     nrow = nrow(LambdaR)))
       colnames(DMACS) <- colnames(LambdaR)
       rownames(DMACS) <- rownames(LambdaR)
@@ -357,7 +351,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
                                                    LambdaR, LambdaF,
                                                    NuR, NuF,
-                                                   MeanF, VarF, categorical = FALSE, ...),
+                                                   MeanF, VarF, categorical = FALSE),
                                             nrow = nrow(LambdaR)))
       colnames(ItemDeltaMean) <- colnames(LambdaR)
       rownames(ItemDeltaMean) <- rownames(LambdaR)
@@ -400,9 +394,6 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 #' Only unidimensional models are supported with longitudinal data.
 #' Note that output will always use indicator names from the reference
 #' timepoint.
-#' @param ... other parameters to be used in functions that
-#' \code{lavaan_dmacs} calls, most likely \code{stepsize} for the
-#' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
 #'
 #' @return A list, indexed by group or timepoint, of lists of measurement nonequivalence
 #' effects from Nye and Drasgow (2011), including dmacs, expected bias in
@@ -430,7 +421,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 #' @export
 
 
-lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group", ...) {
+lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group") {
   if (grepl("ong", MEtype, fixed = TRUE)) { # Long, Longitudinal, long, longitudinal
     ## Groups are time-points. We ignore correlated residuals!
 
@@ -494,7 +485,7 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group",
         # Fetch indicator names so we can grepl them
         ItemNames <- rownames(LambdaList[[x]])
 
-        # Make a list index by items
+        # Return a list index by items
         lapply(ItemNames, function (y) {
           # now we need to fetch the thresholds for this item.
           FitEst$tau[grepl(paste0(y, "\\|"), rownames(FitEst$tau))]
@@ -575,13 +566,13 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group",
                              MeanList, VarList, SDList,
                              Groups, RefGroup,
                              ThreshList, ThetaList,
-                             categorical, ...)
+                             categorical)
   } else {
 
     Results <- dmacs_summary(LambdaList, NuList,
                              MeanList, VarList, SDList,
                              Groups, RefGroup,
-                             categorical, ...)
+                             categorical)
   }
 
 
@@ -607,9 +598,6 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group",
 #' denominator of the dmacs effect size. Possibilities are "pooled" for
 #' pooled standard deviations, or "glass" for always using the standard
 #' deviation of the reference group.
-#' @param ... other parameters to be used in functions that
-#' \code{mplus_dmacs} calls, most likely \code{stepsize} for the
-#' \code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.
 #'
 #' @return A list, indexed by group, of lists of measurement nonequivalence
 #' effects from Nye and Drasgow (2011), including dmacs, expected bias in
@@ -627,7 +615,7 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group",
 #' 966-980.
 #' @export
 
-mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ...) {
+mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled") {
   ## We will need the raw text file later if continuous variables with pooled dtype
   fit0 <- fit
 
@@ -694,22 +682,45 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ..
   ## Check to see if we are in a continuous or categorical context, because ThreshList works very differently in those two contexts
   if (length(fit$input$variable$categorical) == 0) {
     categorical <- FALSE
-    ## now fetch ThreshList
-    ThreshList <- lapply(Groups, function (G) {
+    ## now fetch NuList
+    NuList <- lapply(Groups, function (G) {
       sapply(ItemNames, function (I) {
         ## Intercept value for Item I, Group G
         Params[(Params$paramHeader == "Intercepts") & (Params$param == I) & (Params$Group == G), "est"]
       })
     })
+
+    ## ThreshList and ThetaList do not exist here
+    ThreshList <- NULL
+    ThetaList  <- NULL
+
   } else {
     categorical <- TRUE
+
+    ## Create NuList which is all zeros.
+    NuList <- lapply(Groups, function (G) {
+      sapply(ItemNames, function (I) {
+        ## Intercept value for Item I, Group G
+        0
+      })
+    })
+
     ## now fetch ThreshList
     ThreshList <- lapply(Groups, function (G) {
       lapply(ItemNames, function(I) {
         ## All threshold values (in a vector... they are in order in "Params") of item I, group G
-        Params[(Params$paramHeader == "Thresholds") & (grepl(paste0(I, "$"), Params$param, fixed = TRUE)) & (Params$Group == G), "est"]
+        Params[(Params$paramHeader == "Thresholds") & (grepl(paste0("^", I, "\\$"), Params$param)) & (Params$Group == G), "est"]
       })
     })
+
+    ## Now fetch ThetaList
+    ThetaList <- lapply(Groups, function (G) {
+      sapply(ItemNames, function (I) {
+        # All residual variances in a vector
+        Params[(Params$paramHeader == "Residual.Variances") & (Params$param == I) & (Params$Group == G), "est"]
+      })
+    })
+
   }
 
   ## All that's left is to compute the SDs... which doesn't sound fun at all
@@ -794,10 +805,11 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ..
 
   }
 
-  Results <- dmacs_summary(LambdaList, ThreshList,
+  Results <- dmacs_summary(LambdaList, NuList,
                            MeanList, VarList, SDList,
                            Groups, RefGroup,
-                           categorical, ...)
+                           ThreshList, ThetaList,
+                           categorical)
 
   ## Note to self - we may need to insert some names here!!
 
