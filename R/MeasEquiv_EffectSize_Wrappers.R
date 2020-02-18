@@ -697,6 +697,9 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled") {
   } else {
     categorical <- TRUE
 
+    ## If "Scales" is in paramHeader, throw an error and demand THETA parameterization
+    if ("Scales" %in% Params$paramHeader) stop(cat("Only THETA parameterization is supported for models fit by Mplus. Please insert \n Analysis: parameterization = THETA;"))
+
     ## Create NuList which is all zeros.
     NuList <- lapply(Groups, function (G) {
       sapply(ItemNames, function (I) {
