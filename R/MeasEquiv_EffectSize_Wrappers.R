@@ -443,12 +443,22 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group")
     names(LambdaList) <- Groups
 
     NuList <- lapply(1:length(Groups), function (x) {
-      FitEst$nu[rownames(LambdaList[[x]]),]
+      if (is.null(FitEst$nu)) {
+        # fill in zeros, because if intercepts are not in the model, they are automatically zero
+        rep(0, length(rownames(LambdaList[[x]])))
+      } else {
+        FitEst$nu[rownames(LambdaList[[x]]),]
+      }
     })
     names(NuList) <- Groups
 
     MeanList   <- lapply(Groups, function(x) {
-      FitEst$alpha[x,1]
+      if (is.null(FitEst$alpha)) {
+        # If factor mean is not mentioned in the model, it must be zero!
+        0
+      } else {
+        FitEst$alpha[x,1]
+      }
     })
     names(MeanList) <- Groups
 
@@ -477,6 +487,8 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group")
     ## Check to see if we are using categorical or linear variables, because Thresh and Theta only apply to categorical
     if (length(lavaan::lavNames(fit, type = "ov.ord")) == 0) {
       categorical  <- FALSE
+      ThreshList <- NULL
+      ThetaList <- NULL
     } else {
       categorical  <- TRUE
 
@@ -559,21 +571,12 @@ lavaan_dmacs <- function (fit, RefGroup = 1, dtype = "pooled", MEtype = "Group")
     }
   }
 
-  # Call to dmacs_summary is different for categorical and continuous variables
-  if (categorical) {
 
-    Results <- dmacs_summary(LambdaList, NuList,
-                             MeanList, VarList, SDList,
-                             Groups, RefGroup,
-                             ThreshList, ThetaList,
-                             categorical)
-  } else {
-
-    Results <- dmacs_summary(LambdaList, NuList,
-                             MeanList, VarList, SDList,
-                             Groups, RefGroup,
-                             categorical)
-  }
+  Results <- dmacs_summary(LambdaList, NuList,
+                           MeanList, VarList, SDList,
+                           Groups, RefGroup,
+                           ThreshList, ThetaList,
+                           categorical)
 
 
   ## Note to self - we may need to insert some names here!!
