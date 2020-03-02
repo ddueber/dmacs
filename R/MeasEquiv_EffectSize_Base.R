@@ -485,10 +485,3 @@ DTF_graph       <- function (LambdaR, LambdaF,
   expected_value <- function (Lambda, Nu, Eta, Thresh = NULL, Theta = NULL, categorical = FALSE) {}
 }
 
-
-
-
-LambdaF <- matrix(c(1.00, 0.74,  1.14, 0.92), ncol = 1)
-LambdaR <- matrix(c(1.00, 0.76,  1.31, 0.98), ncol = 1)
-NuF     <- c(0.00, 1.28, -0.82, 0.44)
-NuR     <- c(0.00, 0.65, -0.77, 0.47)

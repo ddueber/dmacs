@@ -4,8 +4,7 @@
 \alias{lavaan_dmacs}
 \title{Summary of measurement nonequivalence effects}
 \usage{
-lavaan_dmacs(fit, RefGroup = 1, dtype = "pooled", MItype = "Group",
-  ...)
+lavaan_dmacs(fit, RefGroup = 1, dtype = "pooled", MEtype = "Group")
 }
 \arguments{
 \item{fit}{is a fitted lavaan multi-group object. Only CFA models are
@@ -23,10 +22,6 @@ or the name of the latent factor at the reference timepoint.}
 denominator of the dmacs effect size. Possibilities are "pooled" for
 pooled standard deviations, or "glass" for always using the standard
 deviation of the reference group.}
-
-\item{...}{other parameters to be used in functions that
-\code{lavaan_dmacs} calls, most likely \code{stepsize} for the
-\code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.}
 
 \item{MEtype}{described the type of measurement equivalence testing
 being performed. Defaults to "Group" for multigroup testing. Other

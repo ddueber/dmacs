@@ -4,7 +4,7 @@
 \alias{mplus_dmacs}
 \title{Summary of measurement nonequivalence effects}
 \usage{
-mplus_dmacs(fit = file.choose(), RefGroup = 1, dtype = "pooled", ...)
+mplus_dmacs(fit = file.choose(), RefGroup = 1, dtype = "pooled")
 }
 \arguments{
 \item{fit}{is an Mplus .out file of a multigroup CFA analysis. The default
@@ -20,10 +20,6 @@ often ordered by their appearance in the data, not alphabetically.}
 denominator of the dmacs effect size. Possibilities are "pooled" for
 pooled standard deviations, or "glass" for always using the standard
 deviation of the reference group.}
-
-\item{...}{other parameters to be used in functions that
-\code{mplus_dmacs} calls, most likely \code{stepsize} for the
-\code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.}
 }
 \value{
 A list, indexed by group, of lists of measurement nonequivalence

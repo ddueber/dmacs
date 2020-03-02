@@ -48,10 +48,6 @@ thresholds are provided, categorical will be forced to
 lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 for other categorical models (e.g., IRT parameterization) to be supported,
 e-mail the maintainer.}
-
-\item{ThreshR}{is a vector of thresholds (for categorical indicators)
-for the reference group. Defaults to \code{NULL} for continuous
-indicators.}
 }
 \value{
 The expected bias in item mean due to

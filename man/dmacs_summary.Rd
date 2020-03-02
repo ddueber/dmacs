@@ -6,7 +6,7 @@
 \usage{
 dmacs_summary(LambdaList, NuList, MeanList, VarList, SDList,
   Groups = NULL, RefGroup = 1, ThreshList = NULL, ThetaList = NULL,
-  categorical = FALSE, ...)
+  categorical = FALSE)
 }
 \arguments{
 \item{LambdaList}{is a list, indexed by groups, of factor loading
@@ -56,10 +56,6 @@ thresholds are provided for an item, categorical will be forced to
 lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 for other categorical models (e.g., IRT parameterization) to be supported,
 e-mail the maintainer.}
-
-\item{...}{other parameters to be used in functions that
-\code{dmacs_summary} calls, most likely \code{stepsize} for the
-\code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.}
 }
 \value{
 A list, indexed by groups, of lists of measurement nonequivalence

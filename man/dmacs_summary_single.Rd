@@ -6,7 +6,7 @@
 \usage{
 dmacs_summary_single(LambdaR, LambdaF, NuR, NuF, MeanF, VarF, SD,
   ThreshR = NULL, ThreshF = NULL, ThetaR = NULL, ThetaF = NULL,
-  categorical = FALSE, ...)
+  categorical = FALSE)
 }
 \arguments{
 \item{LambdaR}{is the factor loading of the indicator onto the factor of
@@ -53,10 +53,6 @@ thresholds are provided for an item, categorical will be forced to
 lavaan or WLSMV in Mplus) is used for categorical variables. If you desire
 for other categorical models (e.g., IRT parameterization) to be supported,
 e-mail the maintainer.}
-
-\item{...}{other parameters to be used in functions that
-\code{dmacs_summary_single} calls, most likely \code{stepsize} for the
-\code{\link{item_dmacs}} and \code{\link{delta_mean_item}} functions.}
 }
 \value{
 A list of measurement nonequivalence effects from Nye and Drasgow
