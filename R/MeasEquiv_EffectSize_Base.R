@@ -98,7 +98,7 @@ item_dmacs <- function (LambdaR, LambdaF,
   if(LambdaR == 0) {return(NA)}
 
   ## Create a function for the integrand using the expected value function expected_value
-  ## The sqrt(VarF) is there because we did a change of varianbles into the z metric
+  ## The change of variable math replaces f_F(Xi) with dnorm(z)
 
   integrand <- function(z, LambdaR, LambdaF,
                         NuR, NuF,
@@ -107,7 +107,7 @@ item_dmacs <- function (LambdaR, LambdaF,
                         MeanF, VarF, categorical) {
 
     (expected_value(LambdaF, NuF, MeanF+z*sqrt(VarF), ThreshF, ThetaF, categorical) -
-       expected_value(LambdaR, NuR, MeanF+z*sqrt(VarF), ThreshR, ThetaR, categorical))^2 * dnorm(z) * sqrt(VarF)
+       expected_value(LambdaR, NuR, MeanF+z*sqrt(VarF), ThreshR, ThetaR, categorical))^2 * dnorm(z)
 
   }
 
@@ -196,7 +196,7 @@ delta_mean_item <- function (LambdaR, LambdaF,
   if (categorical) {
     categorical <- TRUE
     ## If threshold vectors do not have the same length, throw an error
-    if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group")
+    if (length(ThreshR) != length(ThreshF)) stop("Item must have same number of thresholds in both reference and focal group.")
 
   }
 
@@ -204,8 +204,7 @@ delta_mean_item <- function (LambdaR, LambdaF,
   if(LambdaR == 0) {return(NA)}
 
   ## Create a function for the integrand using the expected value function expected_value
-  ## The sqrt(VarF) is there because we did a change of variables into the z metric.
-  ## Probably would have been easier to fix the dnorm, but it's done.
+  ## The change of variable math replaces f_F(Xi) with dnorm(z)
   integrand <- function(z, LambdaR, LambdaF,
                            NuR, NuF,
                            ThreshR, ThreshF,
@@ -213,7 +212,7 @@ delta_mean_item <- function (LambdaR, LambdaF,
                            MeanF, VarF, categorical) {
 
     (expected_value(LambdaF, NuF, MeanF+z*sqrt(VarF), ThreshF, ThetaF, categorical) -
-       expected_value(LambdaR, NuR, MeanF+z*sqrt(VarF), ThreshR, ThetaR, categorical)) * dnorm(z) * sqrt(VarF)
+       expected_value(LambdaR, NuR, MeanF+z*sqrt(VarF), ThreshR, ThetaR, categorical)) * dnorm(z)
 
   }
   ## Now, integrate

@@ -147,10 +147,10 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ME
 
     ## Make a list of loading matrices
     LambdaList <- lapply(Groups, function (G) {
-      sapply(FactorNames, function (F) {
+      sapply(FactorNames, function (Fac) {
         sapply(ItemNames, function (I) {
           ## loading value for factor F, item I, Group G
-          lambda <- Params[(Params$paramHeader == paste0(F, ".BY")) & (Params$param == I) & (Params$Group == G), "est"]
+          lambda <- Params[(Params$paramHeader == paste0(Fac, ".BY")) & (Params$param == I) & (Params$Group == G), "est"]
           ## If lambda is empty, return zero
           if (length(lambda) == 1) {
             lambda
@@ -163,17 +163,17 @@ mplus_dmacs <- function(fit = file.choose(),  RefGroup = 1, dtype = "pooled", ME
 
     ## Make a list of factor means
     MeanList <- lapply(Groups, function (G) {
-      sapply(FactorNames, function (F) {
-        ## mean value for factor F, group G
-        Params[(Params$paramHeader == "Means") & (Params$param == F) & (Params$Group == G), "est"]
+      sapply(FactorNames, function (Fac) {
+        ## mean value for factor Fac, group G
+        Params[(Params$paramHeader == "Means") & (Params$param == Fac) & (Params$Group == G), "est"]
       })
     })
 
     ## Make a list of factor variances
     VarList <- lapply(Groups, function (G) {
-      sapply(FactorNames, function (F) {
-        ## variance value for factor F, group G
-        Params[(Params$paramHeader == "Variances") & (Params$param == F) & (Params$Group == G), "est"]
+      sapply(FactorNames, function (Fac) {
+        ## variance value for factor Fac, group G
+        Params[(Params$paramHeader == "Variances") & (Params$param == Fac) & (Params$Group == G), "est"]
       })
     })
 
