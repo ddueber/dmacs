@@ -256,6 +256,15 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
                       categorical)
       names(DMACS) <- rownames(LambdaR)
 
+      DMACS_signed <- mapply(item_dmacs_signed,
+                             LambdaR, LambdaF,
+                             NuR, NuF,
+                             MeanF, VarF, SD,
+                             ThreshR, ThreshF,
+                             ThetaR, ThetaF,
+                             categorical)
+      names(DMACS_signed) <- rownames(LambdaR)
+
       ItemDeltaMean <- mapply(delta_mean_item,
                               LambdaR, LambdaF,
                               NuR, NuF,
@@ -268,7 +277,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       MeanDiff <- sum(ItemDeltaMean, na.rm = TRUE)
       names(MeanDiff) <- colnames(LambdaR)
 
-      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
+      list(DMACS = DMACS, DMACS_signed = DMACS_signed, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
 
     } else {
 
@@ -289,6 +298,17 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       colnames(DMACS) <- colnames(LambdaR)
       rownames(DMACS) <- rownames(LambdaR)
 
+      DMACS_signed <- as.data.frame(matrix(mapply(item_dmacs_signed,
+                                                  LambdaR, LambdaF,
+                                                  NuR, NuF,
+                                                  MeanF, VarF, SD,
+                                                  ThreshR, ThreshF,
+                                                  ThetaR, ThetaF,
+                                                  categorical),
+                                            nrow = nrow(LambdaR)))
+      colnames(DMACS_signed) <- colnames(LambdaR)
+      rownames(DMACS_signed) <- rownames(LambdaR)
+
 
       ## ItemDeltaMean has the same possible issues as DMACS
       ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
@@ -304,7 +324,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
 
       MeanDiff <- colSums(ItemDeltaMean, na.rm = TRUE)
 
-      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
+      list(DMACS = DMACS, DMACS_signed = DMACS_signed, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)
 
 
     }
@@ -316,6 +336,12 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
                                   NuR, NuF,
                                   MeanF, VarF, SD, categorical = FALSE)
       names(DMACS) <- rownames(LambdaR)
+
+      DMACS_signed <- mapply(item_dmacs_signed, 
+                             LambdaR, LambdaF,
+                             NuR, NuF,
+                             MeanF, VarF, SD, categorical = FALSE)
+      names(DMACS_signed) <- rownames(LambdaR)
 
       ItemDeltaMean <- mapply(delta_mean_item, LambdaR, LambdaF,
                                                NuR, NuF,
@@ -346,6 +372,14 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       colnames(DMACS) <- colnames(LambdaR)
       rownames(DMACS) <- rownames(LambdaR)
 
+      DMACS_signed <- as.data.frame(matrix(mapply(item_dmacs_signed,
+                                           LambdaR, LambdaF,
+                                           NuR, NuF,
+                                           MeanF, VarF, SD, categorical = FALSE),
+                                    nrow = nrow(LambdaR)))
+      colnames(DMACS_signed) <- colnames(LambdaR)
+      rownames(DMACS_signed) <- rownames(LambdaR)
+
 
       ## ItemDeltaMean has the same possible issues as DMACS
       ItemDeltaMean <- as.data.frame(matrix(mapply(delta_mean_item,
@@ -362,7 +396,7 @@ dmacs_summary_single <- function (LambdaR, LambdaF,
       #VarDiff <- delta_var(LambdaR, LambdaF, VarF)
 
 
-      list(DMACS = DMACS, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)#, VarDiff = VarDiff)
+      list(DMACS = DMACS, DMACS_signed = DMACS_signed, ItemDeltaMean = ItemDeltaMean, MeanDiff = MeanDiff)#, VarDiff = VarDiff)
     }
 
   }
